@@ -1,0 +1,23 @@
+[project]
+name = "joft"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Martin Curlej", email = "mcurlej@redhat.com"},
+]
+dependencies = [
+    "jira[cli]>=3.6.0",
+    "click>=8.1.7",
+]
+requires-python = "==3.11.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest>=8.1.1",
+]
