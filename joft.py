@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from src.joft.cli import main
+import joft.cli
 
 if __name__ == "__main__":
-    main()
+    joft.cli.main()

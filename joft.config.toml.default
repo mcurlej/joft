@@ -1,0 +1,3 @@
+[jira.server]
+hostname = "<your jira server hostname>"
+api_token = "<your jira api token>"
