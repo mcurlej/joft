@@ -1,0 +1,11 @@
+apiVersion: 1
+kind: jira-template
+metadata:
+  name: "Create Epic in Jira"
+  description: "TBA"
+triggers:
+- kind: trigger
+  trigger-id: "search-1"
+  type: jira-jql-search
+  spec:
+    jql: "project = RHEL AND status in (NEW) AND component in (dnf, dnf5)"

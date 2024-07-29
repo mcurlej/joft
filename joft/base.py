@@ -11,12 +11,12 @@ import joft.models
 import joft.utils
 
 
-def execute_template(template_file_path: str, jira_session: jira.JIRA) -> None:
+def execute_template(template_file_path: str, jira_session: jira.JIRA) -> int:
     """ Function which starts the whole process of jira template execution """
 
     template: typing.Dict[str, typing.Any] = joft.utils.load_and_parse_yaml_file(template_file_path)
     jira_template = joft.models.JiraTemplate(**template)
-    
+
     logging.info("Yaml file loaded...")
     # we validate if the user entered unique object_ids for different actions in the 
     # template. Each object_id references a action or a trigger, which in turn references
@@ -31,20 +31,23 @@ def execute_template(template_file_path: str, jira_session: jira.JIRA) -> None:
                                      jira_session.search_issues(jira_template.jira_search.jql))
 
         if not trigger_result:
-            # TODO: dont raise but log error and exit the script
-            raise Exception("No tickets found!")
+            logging.info(("No tickets found according to the provided jira query "
+                          f"'{jira_template.jira_search.jql}'!"))
+            return 1
 
         # when the jira query is successfull the actions of template will be then executed
         # for each ticket in the query
         execute_actions_per_trigger_ticket(trigger_result, jira_template, jira_session)
+        return 0
 
     # if there is no trigger defined the actions are executed once
     execute_actions(jira_template, jira_session)
+    return 0
 
 
 def execute_actions(jira_template: joft.models.JiraTemplate, 
                     jira_session: jira.JIRA,
-                    reference_pool: typing.Dict[str, typing.Union[str, jira.Issue | str | typing.List[str]]] = {}):
+                    reference_pool: typing.Dict[str, typing.Union[str, jira.Issue | str | typing.List[str]]] = {}) -> None:
     
     for action in jira_template.jira_actions:
         # we deep copy each action from the template
@@ -59,14 +62,12 @@ def execute_actions(jira_template: joft.models.JiraTemplate,
         elif action.type == "link-issues":
             joft.actions.link_issues(typing.cast(joft.models.LinkIssuesAction, copy.deepcopy(action)), 
                                          jira_session, reference_pool)
-        else:
-            raise Exception(f"Undocumented action type '{action.type}' aborting!")
 
 
 
 def execute_actions_per_trigger_ticket(trigger_result: typing.List[jira.Issue], 
                                        jira_template: joft.models.JiraTemplate,
-                                       jira_session: jira.JIRA):
+                                       jira_session: jira.JIRA) -> None:
     """ Function which executes the action for each ticket found in a trigger query. """
     
     # reference_pool holds information about data which was referenced by object ids in the
@@ -82,10 +83,9 @@ def execute_actions_per_trigger_ticket(trigger_result: typing.List[jira.Issue],
         reference_pool[jira_template.jira_search.object_id] = ticket
         execute_actions(jira_template, jira_session, reference_pool)
         reference_pool = {}
-        import pdb; pdb.set_trace()
 
 
-def validate_uniqueness_of_object_ids(jira_template: joft.models.JiraTemplate):
+def validate_uniqueness_of_object_ids(jira_template: joft.models.JiraTemplate) -> None:
     """ Validate check if the object ids defined by the user are unique. """
 
     object_ids: typing.List[str] = []
@@ -99,22 +99,24 @@ def validate_uniqueness_of_object_ids(jira_template: joft.models.JiraTemplate):
     # check if all the object ids are unique
     if len(object_ids) != len(set(object_ids)):
         duplicate_id: str = max(object_ids, key = object_ids.count)
-        raise Exception((f"The validation of the property 'object_id' has failed. "
-                         "The object_id with the value '{duplicate_id}' has been "
-                         "defined as the 'object_id' for 2 or more objects!"))
+        err_msg = ("The validation of the property 'object_id' has failed. "
+                   f"The object_id with the value '{duplicate_id}' has been "
+                   "defined as the 'object_id' for 2 or more objects!")
+        raise Exception(err_msg)
     
 
-def validate_template(template_file_path: str):
+def validate_template(template_file_path: str) -> int:
     template: typing.Dict[str, typing.Any] = joft.utils.load_and_parse_yaml_file(template_file_path)
     jira_template = joft.models.JiraTemplate(**template)
     validate_uniqueness_of_object_ids(jira_template)
+    return 0
 
 
-def update_reference_pool(reuse_data: typing.List[joft.models.ReferenceData], 
+def update_reference_pool(reference_data: typing.List[joft.models.ReferenceData], 
                           reference_pool: typing.Dict[str, typing.Union[str, jira.Issue, typing.List[typing.Any]]]):
     """ We update the reference_pool with the references from the reuse_data section """
 
-    for data in reuse_data:
+    for data in reference_data:
         if data.reference_id not in reference_pool:
             raise Exception(f"The reference id '{data.reference_id}' is used before it was declared.")
         
@@ -132,12 +134,20 @@ def update_reference_pool(reuse_data: typing.List[joft.models.ReferenceData],
             reference_pool[f"{data.reference_id}.{data.field}"] = []
             for component in ref_object.fields.components:
                 typing.cast(list, reference_pool[f"{data.reference_id}.{data.field}"]).append({"name": component.name})
+        elif data.field in ["project"]:
+            reference_pool[f"{data.reference_id}.{data.field}"] = getattr(ref_object.fields.project, "key")
         else:
             reference_pool[f"{data.reference_id}.{data.field}"] = getattr(ref_object.fields, data.field)
 
 
 def apply_reference_pool_to_payload(reference_pool: typing.Dict[str, typing.Union[str, jira.Issue | str | typing.List[str]]],
-                                    fields: typing.Any):
+                                    fields: typing.Any) -> None:
+    """ 
+    Apply the reference_pool to the payload that will be sent to Jira via REST request.
+    It means each reference which is found in the 'fields' section of an action, will be
+    replaced by the value which is referenced by the same reference in the reference_pool
+    """
+
     for field in fields:
         for ref, v in reference_pool.items():
             # TODO: write tests about replacing values and refactor this
@@ -151,8 +161,12 @@ def apply_reference_pool_to_payload(reference_pool: typing.Dict[str, typing.Unio
                         continue
 
             if type(v) is str:
+                # there can be multiple references in one field
                 if field == "project":
-                    fields[field]["key"] = replace_ref(fields[field]["key"], ref, v)
+                    if "key" in fields[field]:
+                        fields[field]["key"] = replace_ref(fields[field]["key"], ref, v)
+                    elif "name" in fields[field]:
+                        fields[field]["name"] = replace_ref(fields[field]["name"], ref, v)
                     continue
                 if field == "issuetype":
                     fields[field]["name"] = replace_ref(fields[field]["name"], ref, v)
@@ -164,14 +178,12 @@ def apply_reference_pool_to_payload(reference_pool: typing.Dict[str, typing.Unio
                     fields[field]["name"] = replace_ref(fields[field]["name"], ref, v)
                     continue
                 if field == "labels":
-                    fields[field] = list(map(lambda label: replace_ref(label, ref, v), fields[field]))
+                    fields[field] = list(map(lambda label: replace_ref(label, ref, typing.cast(str, v)), fields[field]))
                     continue
                 
-                # replace if there is a reference there. If not the fields
-                # was alredy updated
                 if ref in fields[field]:
                     fields[field] = replace_ref(fields[field], ref, v)
 
 
-def replace_ref(field, ref, value):
+def replace_ref(field: str, ref: str, value: str) -> str:
     return field.replace("${" + ref + "}", value)

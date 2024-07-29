@@ -13,22 +13,26 @@ def create_ticket(action: joft.models.CreateTicketAction,
                   reference_pool: typing.Dict[str, typing.Union[str, jira.Issue | str | typing.List[str]]]):
     joft.base.update_reference_pool(action.reference_data, reference_pool)
     joft.base.apply_reference_pool_to_payload(reference_pool, action.fields)
-    
     logging.debug(f"Creating new ticket of type: {action.fields['issuetype']['name']}")
     logging.debug(f"Payload:\n{action.fields}")
-    
+
     new_issue: jira.Issue = jira_session.create_issue(action.fields)
     
     logging.info(f"New Jira ticket created: {new_issue.permalink()}")
     
     reference_pool[action.object_id] = new_issue
 
-
+# TODO jira_session is not needed here. Maybe remove?
 def update_ticket(action: joft.models.UpdateTicketAction, 
                   jira_session: jira.JIRA,
                   reference_pool: typing.Dict[str, typing.Union[str, jira.Issue | str | typing.List[str]]]):
     joft.base.update_reference_pool(action.reference_data, reference_pool)
     joft.base.apply_reference_pool_to_payload(reference_pool, action.fields)
+
+    if action.reference_id not in reference_pool:
+        raise Exception((f"Invalid reference id '{action.reference_id}'! "
+                         "You are referencing something that does not exist!"))
+
     ticket_to: jira.Issue = typing.cast(jira.Issue, reference_pool[action.reference_id])
     
     logging.debug(f"Updating ticket '{ticket_to.key}'")

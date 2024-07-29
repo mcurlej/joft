@@ -22,6 +22,12 @@ class Action:
     object_id: str 
     fields: typing.Dict[str, typing.Any]
 
+    def reuse_data_must_be_list(self, reuse_data):
+        reuse_data_type = type(reuse_data)
+
+        if reuse_data_type is not list:
+            raise Exception(f"Reuse data is a '{reuse_data_type}' type, must be a list.")
+
 
 @dataclasses.dataclass(kw_only=True)
 class CreateTicketAction(Action):
@@ -30,6 +36,8 @@ class CreateTicketAction(Action):
     reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
     def __post_init__(self, reuse_data):
         if reuse_data:
+            self.reuse_data_must_be_list(reuse_data)
+
             for data in reuse_data:
                 self.reference_data.append(ReferenceData(**data))
 
@@ -42,6 +50,8 @@ class UpdateTicketAction(Action):
     reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
     def __post_init__(self, reuse_data):
         if reuse_data:
+            self.reuse_data_must_be_list(reuse_data)
+
             for data in reuse_data:
                 self.reference_data.append(ReferenceData(**data))
 
@@ -54,6 +64,8 @@ class LinkIssuesAction(Action):
     reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
     def __post_init__(self, reuse_data):
         if reuse_data:
+            self.reuse_data_must_be_list(reuse_data)
+
             for data in reuse_data:
                 self.reference_data.append(ReferenceData(**data))
 
@@ -77,6 +89,7 @@ class JiraTemplate:
         if trigger:
             self.jira_search: Trigger = Trigger(**trigger)
 
+        # TODO: all init vars need to be checked for correct types and raise if it is not so.
         for action in actions:
             if action["type"] == "create-ticket":
                 self.jira_actions.append(CreateTicketAction(**action))
