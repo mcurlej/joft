@@ -5,15 +5,14 @@ import typing
 import jira
 import jira.client
 import jira.resources
+import tabulate
 
 import joft.actions
 import joft.models
 import joft.utils
 
 
-def execute_template(template_file_path: str, jira_session: jira.JIRA) -> int:
-    """ Function which starts the whole process of jira template execution """
-
+def load_and_validate_template(template_file_path: str) -> joft.models.JiraTemplate:
     template: typing.Dict[str, typing.Any] = joft.utils.load_and_parse_yaml_file(template_file_path)
     jira_template = joft.models.JiraTemplate(**template)
 
@@ -21,14 +20,39 @@ def execute_template(template_file_path: str, jira_session: jira.JIRA) -> int:
     # we validate if the user entered unique object_ids for different actions in the 
     # template. Each object_id references a action or a trigger, which in turn references
     # their results (a ticket or a results of a search)
-    validate_uniqueness_of_object_ids(jira_template) 
+    validate_uniqueness_of_object_ids(jira_template)
+
+    return jira_template
+
+
+def search_issues(jira_template: joft.models.JiraTemplate, jira_session: jira.JIRA):
+    return typing.cast(jira.client.ResultList[jira.Issue],
+                       jira_session.search_issues(jira_template.jira_search.jql))
+
+
+def list_issues(template_file_path: str, jira_session: jira.JIRA):
+    jira_template = load_and_validate_template(template_file_path)
+
+    trigger_result = search_issues(jira_template, jira_session)
+
+    if not trigger_result:
+        return "No issues found."
+
+    table_result = [[issue.key, issue.permalink()] for issue in trigger_result]
+
+    return tabulate.tabulate(table_result, ["Key", "URL"])
+
+
+def execute_template(template_file_path: str, jira_session: jira.JIRA) -> int:
+    """ Function which starts the whole process of jira template execution """
+
+    jira_template = load_and_validate_template(template_file_path)
 
     # the trigger is not mandatory for action execution. This means that you dont need to
     # start your jira template with a trigger. If no trigger is present the actions will be
     # executed only once.
     if jira_template.jira_search:
-        trigger_result = typing.cast(jira.client.ResultList[jira.Issue],
-                                     jira_session.search_issues(jira_template.jira_search.jql))
+        trigger_result = search_issues(jira_template, jira_session)
 
         if not trigger_result:
             logging.info(("No tickets found according to the provided jira query "

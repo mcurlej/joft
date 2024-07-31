@@ -40,3 +40,18 @@ def run(ctx, template: str) -> int:
 
     sys.exit(ret_code)
 
+
+@main.command(name="list-issues")
+@click.option("--template", help="File path to the template file.")
+@click.pass_obj
+def list_issues(ctx, template: str) -> None:
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+    logging.info(f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:")
+
+    jira_session = jira.JIRA(ctx['jira']['server']['hostname'], 
+                             token_auth=ctx['jira']['server']["api_token"])
+
+    logging.info("Session established...")
+    logging.info(f"Executing trigger from Jira template: {template}")
+
+    print(joft.base.list_issues(template, jira_session))
