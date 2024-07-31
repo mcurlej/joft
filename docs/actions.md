@@ -109,5 +109,7 @@ actions:
   reference_id: "issue"
   transition: "Closed"
   comment: "Closed by joft with the transition action with this comment!"
-  fields: {}
+  fields:
+    resolution:
+      name: "Not a Bug"
 ```
