@@ -1,11 +1,9 @@
 ### Table of contents
 
 1. [Yaml template file introductory example](introduction.md)
-2. [Actions](actions.md)
+2. [Actions YAML API](actions.md)
 
 # Yaml template file introductory example
-
-For now there are only 3 types of actions `create-ticket`, `update-ticket` and `link-issues` action.
 
 This example creates an epic for each found bug by the JQL query. Then it links the two tickets through a "is caused by"/"causes" link.
 

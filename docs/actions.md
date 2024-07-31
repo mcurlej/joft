@@ -89,3 +89,28 @@ Example of `link-issues` action.
     inward_issue: "${issue.key}"
     outward_issue: "${bug-epic.key}"
 ```
+
+## transition
+
+The `transition` action changes the status of the issue and adds a comment to that issue. The `reference_id` represents a referenced issue from previous actions/trigger. The `transition` field represents the name or id of the desired status you want this issue to be transitioned to.
+
+Example of `transition` action
+
+```
+api_version: 1
+kind: jira-template
+metadata:
+  name: "Close a bug with comment"
+  description: "TBA"
+trigger:
+  type: jira-jql-search
+  object_id: "issue"
+  jql: project = Project and issuetype = bug
+actions:
+- object_id: "close-bug" 
+  type: transition
+  reference_id: "issue"
+  transition: "Closed"
+  comment: "Closed by joft with the transition action with this comment!"
+  fields: {}
+```

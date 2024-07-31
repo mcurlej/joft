@@ -202,3 +202,64 @@ def test_link_ticket():
     inward = link_issue_template["fields"]["inward_issue"]
     outward = link_issue_template["fields"]["outward_issue"]
     mock_jira_session.create_issue_link.assert_called_once_with(link_type, inward, outward)
+
+
+def test_transition_ticket_invalid_ref_raise():
+    """ We transition a ticket to another status with comment """
+
+    bad_reference_id = "bad_ref"
+
+    transition_issue_template = {
+        "type": "transition",
+        "object_id": "close-bug",
+        "reference_id": bad_reference_id,
+        "comment": "Closed bug by Joft",
+        "transition": "Closed",
+        "fields": {},
+    }
+
+    transition_action = joft.models.TransitionAction(**transition_issue_template)
+
+    mock_jira_session = unittest.mock.MagicMock()
+    mock_bug = unittest.mock.MagicMock()
+
+    mock_reference_pool = {
+        "bug": mock_bug,
+    } 
+
+    with pytest.raises(Exception) as ex:
+        joft.actions.transition_issue(transition_action, mock_jira_session, mock_reference_pool)
+    
+    # Assertions
+    assert "invalid reference id" in ex.value.args[0].lower()
+    assert bad_reference_id in ex.value.args[0].lower()
+
+
+def test_transition_ticket():
+    """ We transition a ticket to another status with comment """
+
+    transition_issue_template = {
+        "type": "transition",
+        "object_id": "close-bug",
+        "reference_id": "bug",
+        "comment": "Closed bug by Joft",
+        "transition": "Closed",
+        "fields": {},
+    }
+
+    transition_action = joft.models.TransitionAction(**transition_issue_template)
+
+    mock_jira_session = unittest.mock.MagicMock()
+    mock_bug = unittest.mock.MagicMock()
+
+    mock_reference_pool = {
+        "bug": mock_bug,
+    } 
+
+    joft.actions.transition_issue(transition_action, mock_jira_session, mock_reference_pool)
+    
+    # Assertions
+    mock_jira_session.transition_issue.assert_called_once_with(mock_bug, 
+                                                               transition_action.transition, 
+                                                               transition_action.fields,
+                                                               transition_action.comment)

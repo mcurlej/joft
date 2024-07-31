@@ -53,14 +53,18 @@ def execute_actions(jira_template: joft.models.JiraTemplate,
         # we deep copy each action from the template
         # each run of all the actions needs each action to retain its references
         # the references are replaced and filled in when the action is executed
-        if action.type == "create-ticket":
-            joft.actions.create_ticket(typing.cast(joft.models.CreateTicketAction, copy.deepcopy(action)), 
+        match action.type:
+            case "create-ticket":
+                joft.actions.create_ticket(typing.cast(joft.models.CreateTicketAction, copy.deepcopy(action)), 
                                            jira_session, reference_pool)
-        elif action.type == "update-ticket":
-            joft.actions.update_ticket(typing.cast(joft.models.UpdateTicketAction, copy.deepcopy(action)),
+            case "update-ticket":
+                joft.actions.update_ticket(typing.cast(joft.models.UpdateTicketAction, copy.deepcopy(action)),
                                            jira_session, reference_pool)
-        elif action.type == "link-issues":
-            joft.actions.link_issues(typing.cast(joft.models.LinkIssuesAction, copy.deepcopy(action)), 
+            case "link-issues":
+                joft.actions.link_issues(typing.cast(joft.models.LinkIssuesAction, copy.deepcopy(action)), 
+                                         jira_session, reference_pool)
+            case "transition":
+                joft.actions.transition_issue(typing.cast(joft.models.TransitionAction, copy.deepcopy(action)), 
                                          jira_session, reference_pool)
 
 

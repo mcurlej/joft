@@ -70,6 +70,22 @@ class LinkIssuesAction(Action):
                 self.reference_data.append(ReferenceData(**data))
 
 
+@dataclasses.dataclass(kw_only=True)
+class TransitionAction(Action):
+    reference_id: str
+    transition: str
+    comment: str
+    reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
+
+    reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
+    def __post_init__(self, reuse_data):
+        if reuse_data:
+            self.reuse_data_must_be_list(reuse_data)
+
+            for data in reuse_data:
+                self.reference_data.append(ReferenceData(**data))
+
+
 @dataclasses.dataclass
 class JiraTemplate:
     api_version: int
@@ -81,9 +97,10 @@ class JiraTemplate:
     trigger: dataclasses.InitVar[Trigger]
 
     # with default values procesed in __post_init__
-    jira_actions: typing.List[typing.Union[CreateTicketAction, 
-                                           UpdateTicketAction, 
-                                           LinkIssuesAction]] = dataclasses.field(default_factory=list)
+    jira_actions: list[CreateTicketAction | 
+                       UpdateTicketAction | 
+                       LinkIssuesAction |
+                       TransitionAction] = dataclasses.field(default_factory=list)
 
     def __post_init__(self, actions, trigger) -> None:
         if trigger:
@@ -91,11 +108,14 @@ class JiraTemplate:
 
         # TODO: all init vars need to be checked for correct types and raise if it is not so.
         for action in actions:
-            if action["type"] == "create-ticket":
-                self.jira_actions.append(CreateTicketAction(**action))
-            elif action["type"] == "update-ticket":
-                self.jira_actions.append(UpdateTicketAction(**action))
-            elif action["type"] == "link-issues":
-                self.jira_actions.append(LinkIssuesAction(**action))
-            else:
-                raise Exception(f"Unknown Action '{action['type']}'! Aborting...")
+            match action["type"]:
+                case "create-ticket":
+                    self.jira_actions.append(CreateTicketAction(**action))
+                case "update-ticket":
+                    self.jira_actions.append(UpdateTicketAction(**action))
+                case "link-issues":
+                    self.jira_actions.append(LinkIssuesAction(**action))
+                case "transition":
+                    self.jira_actions.append(TransitionAction(**action))
+                case _:
+                    raise Exception(f"Unknown Action '{action['type']}'! Aborting...")
