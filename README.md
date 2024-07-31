@@ -32,7 +32,7 @@ To validate your yaml template file run:
 
 `./joft.py validate --template ./<path to your yaml template>`
 
-To validate your yaml template file run: 
+To run the actions from your yaml template file run: 
 
 `./joft.py run --template ./<path to your yaml template>`
 
