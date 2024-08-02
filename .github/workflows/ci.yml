@@ -1,0 +1,26 @@
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+name: Run tox
+
+jobs:
+  tox:
+    name: tox
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run tests in tox
+      id: test
+      uses: fedora-python/tox-github-action@main
+      with:
+        tox_env: ${{ matrix.tox_env }}
+    strategy:
+      matrix:
+        tox_env: [py311, py312, type]
+
+    # Use GitHub's Linux Docker host
+    runs-on: ubuntu-latest
