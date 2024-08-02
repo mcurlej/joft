@@ -1,24 +1,27 @@
 [project]
 name = "joft"
 version = "0.1.0"
-description = "Default template for PDM package"
+description = "CLI tool for automation of user actions on a JIRA instance"
 authors = [
     {name = "Martin Curlej", email = "mcurlej@redhat.com"},
 ]
+requires-python = ">=3.11"
+readme = "README.md"
+
 dependencies = [
     "jira[cli]>=3.6.0",
     "click>=8.1.7",
     "pyyaml>=6.0.1",
 ]
-requires-python = "==3.11.*"
-readme = "README.md"
-license = {text = "MIT"}
 
+[project.optional-dependencies]
+dev = ["tox>=4.16.0"]
+test = ["pytest>=8.1.1"]
+type = ["mypy>=1.11.1", "types-PyYAML>=6.0.12.20240724"]
 
-[tool.pdm]
-distribution = false
+[project.scripts]
+joft = "joft.cli:main"
 
-[tool.pdm.dev-dependencies]
-test = [
-    "pytest>=8.1.1",
-]
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
