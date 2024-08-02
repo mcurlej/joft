@@ -12,7 +12,7 @@ class Trigger:
 @dataclasses.dataclass
 class ReferenceData:
     reference_id: str
-    field: str
+    fields: list[str]
 
 
 @dataclasses.dataclass(kw_only=True)

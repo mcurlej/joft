@@ -33,15 +33,11 @@ Example of `create-ticket` action:
   type: create-ticket
   reuse_data:
     - reference_id: "issue"
-      field: "link"
-    - reference_id: "issue"
-      field: "priority"
-    - reference_id: "issue"
-      field: "components"
-    - reference_id: "issue"
-      field: "summary"
-    - reference_id: "issue"
-      field: "key"
+      fields: 
+      - "link"
+      - "components"
+      - "summary"
+      - "key"
   fields:
     project: 
       key: "Project"
@@ -83,7 +79,8 @@ Example of `link-issues` action.
   object_id: "link-bug-and-epic"
   reuse_data:
     - reference_id: "bug-epic"
-      field: "key"
+      fields: 
+      - "key"
   fields:
     type: "causes"
     inward_issue: "${issue.key}"

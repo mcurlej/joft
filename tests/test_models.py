@@ -6,6 +6,7 @@ import joft.models
 def test_jira_template_post_init():
     """ Test the post init method of a dataclass. All the correct types
       should be assigned. """
+
     jira_template_yaml = {
         "api_version": 1,
         "kind": "jira-template",
@@ -23,9 +24,7 @@ def test_jira_template_post_init():
                 "object_id": "ticket",
                 "type": "create-ticket",
                 "reuse_data": [
-                    {"reference_id": "issue", "field": "key"},
-                    {"reference_id": "issue", "field": "summary"},
-                    {"reference_id": "issue", "field": "summary"}
+                    {"reference_id": "issue", "fields": ["key", "summary", "description"]},
                 ],
                 "fields": {
                     "project": {
@@ -43,8 +42,7 @@ def test_jira_template_post_init():
                 "type": "update-ticket",
                 "reference_id": "issue",
                 "reuse_data": [
-                    {"reference_id": "ticket", "field": "key"},
-                    {"reference_id": "ticket", "field": "summary"},
+                    {"reference_id": "ticket", "fields": ["key", "summary"]},
                 ],
                 "fields": {
                     "project": {
@@ -104,7 +102,7 @@ def test_reuse_data_must_be_list():
                 "object_id": "ticket",
                 "type": "create-ticket",
                 "reuse_data": {
-                    "reference_id": "issue", "field": "key",
+                    "reference_id": "issue", "fields": ["key"],
                 },
                 "fields": {
                     "project": {
@@ -150,9 +148,7 @@ def test_execute_actions_invalid_action_raise() -> None:
                 "object_id": "ticket",
                 "type": bad_type,
                 "reuse_data": [
-                    {"reference_id": "issue", "field": "key"},
-                    {"reference_id": "issue", "field": "summary"},
-                    {"reference_id": "issue", "field": "summary"}
+                    {"reference_id": "issue", "field": ["key", "summary", "description"]},
                 ],
                 "fields": {
                     "project": {

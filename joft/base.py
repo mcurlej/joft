@@ -120,28 +120,30 @@ def update_reference_pool(reference_data: typing.List[joft.models.ReferenceData]
                           reference_pool: typing.Dict[str, typing.Union[str, jira.Issue, typing.List[typing.Any]]]):
     """ We update the reference_pool with the references from the reuse_data section """
 
-    for data in reference_data:
-        if data.reference_id not in reference_pool:
-            raise Exception(f"The reference id '{data.reference_id}' is used before it was declared.")
+    for ref in reference_data:
+        if ref.reference_id not in reference_pool:
+            raise Exception(f"The reference id '{ref.reference_id}' is used before it was declared.")
         
-        ref_object = typing.cast(jira.Issue, reference_pool[data.reference_id])
+        ref_object = typing.cast(jira.Issue, reference_pool[ref.reference_id])
 
         # different fields have a different location in the jira issue object
         # we need to appropriate this when extracting the values
-        if data.field in ["id", "key"]:
-            reference_pool[f"{data.reference_id}.{data.field}"] = getattr(ref_object, data.field)
-        elif data.field in ["link", "url", "permalink"]:
-            reference_pool[f"{data.reference_id}.{data.field}"] = ref_object.permalink()
-        elif data.field in ["priority"]:
-            reference_pool[f"{data.reference_id}.{data.field}"] = ref_object.fields.priority.name
-        elif data.field in ["components"]:
-            reference_pool[f"{data.reference_id}.{data.field}"] = []
-            for component in ref_object.fields.components:
-                typing.cast(list, reference_pool[f"{data.reference_id}.{data.field}"]).append({"name": component.name})
-        elif data.field in ["project"]:
-            reference_pool[f"{data.reference_id}.{data.field}"] = getattr(ref_object.fields.project, "key")
-        else:
-            reference_pool[f"{data.reference_id}.{data.field}"] = getattr(ref_object.fields, data.field)
+        for field in ref.fields:
+            match field:
+                case "id" | "key":
+                    reference_pool[f"{ref.reference_id}.{field}"] = getattr(ref_object, field)
+                case "link" | "url" | "permalink":
+                    reference_pool[f"{ref.reference_id}.{field}"] = ref_object.permalink()
+                case "priority":
+                    reference_pool[f"{ref.reference_id}.{field}"] = ref_object.fields.priority.name
+                case "components":
+                    reference_pool[f"{ref.reference_id}.{field}"] = []
+                    for component in ref_object.fields.components:
+                        typing.cast(list, reference_pool[f"{ref.reference_id}.{field}"]).append({"name": component.name})
+                case "project":
+                    reference_pool[f"{ref.reference_id}.{field}"] = getattr(ref_object.fields.project, "key")
+                case _:
+                    reference_pool[f"{ref.reference_id}.{field}"] = getattr(ref_object.fields, field)
 
 
 def apply_reference_pool_to_payload(reference_pool: typing.Dict[str, typing.Union[str, jira.Issue | str | typing.List[str]]],

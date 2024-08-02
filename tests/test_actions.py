@@ -48,9 +48,7 @@ def test_create_ticket_with_references():
         "object_id": "ticket",
         "type": "create-ticket",
         "reuse_data": [
-            {"reference_id": "issue", "field": "key"},
-            {"reference_id": "issue", "field": "summary"},
-            {"reference_id": "issue", "field": "description"},
+            {"reference_id": "issue", "fields": ["key", "summary", "description"]},
         ],
         "fields": {
             "project": {
