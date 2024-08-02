@@ -16,9 +16,9 @@ If you don't provide the trigger JQL query, the defined actions will execute onc
 
 Clone the repo. Create a virtualenv with the tool of your liking just make sure the Python version is 3.11 and higher.
 
-To install all the dependencies of the project go to the root dir of the project in your venv run `pip install .` or `pdm install`. (The project is build by [PDM tool](https://pdm-project.org/en/latest/))
+To install the tool go to the root dir of the project, activate your venv, and run `pip install .`. For development, run `pip install -e .` instead.
 
-To run unit tests run `pytest`.
+To run all tests and type-checker run `tox`.
 
 ## Usage
 
@@ -26,15 +26,15 @@ First you need to have a jira instance and an account on that instance. Then you
 
 To get help run the tool in CLI withou any options: 
 
-`./joft.py`.
+`joft`.
 
 To validate your yaml template file run: 
 
-`./joft.py validate --template ./<path to your yaml template>`
+`joft validate --template ./<path to your yaml template>`
 
 To run the actions from your yaml template file run: 
 
-`./joft.py run --template ./<path to your yaml template>`
+`joft run --template ./<path to your yaml template>`
 
 ## Docs
 
