@@ -12,12 +12,13 @@ dependencies = [
     "jira[cli]>=3.6.0",
     "click>=8.1.7",
     "pyyaml>=6.0.1",
+    "tabulate>=0.9.0",
 ]
 
 [project.optional-dependencies]
 dev = ["tox>=4.16.0"]
 test = ["pytest>=8.1.1"]
-type = ["mypy>=1.11.1", "types-PyYAML>=6.0.12.20240724"]
+type = ["mypy>=1.11.1", "types-PyYAML>=6.0.12.20240724", "types-tabulate>=0.9.0.20240106"]
 
 [project.scripts]
 joft = "joft.cli:main"
