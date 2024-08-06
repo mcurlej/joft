@@ -12,7 +12,7 @@ import joft.utils
 @click.group()
 @click.pass_context
 def main(ctx) -> None:
-    ctx.obj = joft.utils.load_toml_app_config("./joft.config.toml")
+    ctx.obj = joft.utils.load_toml_app_config()
 
 
 # TODO: refactor th CLI interface so it makes more sense
