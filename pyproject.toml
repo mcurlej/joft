@@ -18,6 +18,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["tox>=4.16.0"]
+lint = ["ruff>=0.6.2"]
 test = ["pytest>=8.1.1"]
 type = ["mypy>=1.11.1", "types-PyYAML>=6.0.12.20240724", "types-tabulate>=0.9.0.20240106"]
 
