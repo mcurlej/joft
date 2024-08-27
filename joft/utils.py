@@ -35,7 +35,7 @@ def load_toml_app_config() -> typing.Any:
 
             [jira.server]
             hostname = "<your jira server url>"
-            api_token = "<your jira api token>"
+            pat_token = "<your jira pat token>"
 
             in one of the following directories:
             {', '.join(possible_paths)}\
