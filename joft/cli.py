@@ -8,7 +8,6 @@ import joft.base
 import joft.utils
 
 
-
 @click.group()
 @click.pass_context
 def main(ctx) -> None:
@@ -27,13 +26,16 @@ def validate(template) -> int:
 @click.option("--template", help="File path to the template file.")
 @click.pass_obj
 def run(ctx, template: str) -> int:
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-    logging.info(f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:")
-    
-    jira_session = jira.JIRA(ctx['jira']['server']['hostname'], 
-                             token_auth=ctx['jira']['server']["pat_token"])
+    logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+    logging.info(
+        f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:"
+    )
 
-    logging.info("Session established...")  
+    jira_session = jira.JIRA(
+        ctx["jira"]["server"]["hostname"], token_auth=ctx["jira"]["server"]["pat_token"]
+    )
+
+    logging.info("Session established...")
     logging.info(f"Executing Jira template: {template}")
 
     ret_code = joft.base.execute_template(template, jira_session)
@@ -45,11 +47,14 @@ def run(ctx, template: str) -> int:
 @click.option("--template", help="File path to the template file.")
 @click.pass_obj
 def list_issues(ctx, template: str) -> None:
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-    logging.info(f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:")
+    logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+    logging.info(
+        f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:"
+    )
 
-    jira_session = jira.JIRA(ctx['jira']['server']['hostname'], 
-                             token_auth=ctx['jira']['server']["pat_token"])
+    jira_session = jira.JIRA(
+        ctx["jira"]["server"]["hostname"], token_auth=ctx["jira"]["server"]["pat_token"]
+    )
 
     logging.info("Session established...")
     logging.info(f"Executing trigger from Jira template: {template}")

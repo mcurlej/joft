@@ -8,8 +8,9 @@ import pytest
 
 import joft.utils
 
+
 def test_load_valid_yaml() -> None:
-    """ Quick test to check the loading of yaml files. """
+    """Quick test to check the loading of yaml files."""
 
     yaml_obj = joft.utils.load_and_parse_yaml_file("./tests/mock_data/valid.yaml")
     assert type(yaml_obj) is dict
@@ -20,7 +21,7 @@ def test_load_valid_yaml() -> None:
 
 
 def test_load_invalid_yaml_raise() -> None:
-    """ The function should raise if the yaml file is invalid. """
+    """The function should raise if the yaml file is invalid."""
 
     with pytest.raises(Exception):
         joft.utils.load_and_parse_yaml_file("./tests/mock_data/invalid.yaml")
@@ -29,7 +30,7 @@ def test_load_invalid_yaml_raise() -> None:
 @unittest.mock.patch("joft.utils.pathlib.Path.cwd")
 @unittest.mock.patch("joft.utils.platformdirs")
 def test_load_toml_app_config(mock_platformdirs, mock_cwd):
-    """ Test if we can find the app config file in one of the platform dirs """
+    """Test if we can find the app config file in one of the platform dirs"""
     hostname = "test"
     pat_token = "pat_token"
 
@@ -51,7 +52,7 @@ def test_load_toml_app_config(mock_platformdirs, mock_cwd):
         mock_platformdirs.user_config_dir.return_value = tmpdir + "/" + ".config"
         mock_platformdirs.site_config_dir.return_value = ""
 
-        config = joft.utils.load_toml_app_config()             
+        config = joft.utils.load_toml_app_config()
 
     assert config["jira"]["server"]["hostname"] == hostname
     assert config["jira"]["server"]["pat_token"] == pat_token
@@ -60,8 +61,8 @@ def test_load_toml_app_config(mock_platformdirs, mock_cwd):
 @unittest.mock.patch("joft.utils.pathlib.Path.cwd")
 @unittest.mock.patch("joft.utils.platformdirs")
 def test_load_toml_app_config_no_config_found(mock_platformdirs, mock_cwd):
-    """ 
-    Test that we will end with a non-zero error code when there is no config present and 
+    """
+    Test that we will end with a non-zero error code when there is no config present and
     printing a message on the stdout.
     """
 
@@ -75,9 +76,9 @@ def test_load_toml_app_config_no_config_found(mock_platformdirs, mock_cwd):
         mock_platformdirs.user_config_dir.return_value = tmpdir + "/" + ".config"
         mock_platformdirs.site_config_dir.return_value = ""
 
-        with unittest.mock.patch('sys.stdout', new=io.StringIO()) as mock_stdout:
+        with unittest.mock.patch("sys.stdout", new=io.StringIO()) as mock_stdout:
             with pytest.raises(SystemExit) as sys_exit:
                 joft.utils.load_toml_app_config()
-    
+
     assert "Cannot find configuration file" in mock_stdout.getvalue()
     assert sys_exit.value.args[0] == 1

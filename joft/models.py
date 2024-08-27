@@ -19,14 +19,16 @@ class ReferenceData:
 class Action:
     # required fields
     type: str
-    object_id: str 
+    object_id: str
     fields: typing.Dict[str, typing.Any]
 
     def reuse_data_must_be_list(self, reuse_data):
         reuse_data_type = type(reuse_data)
 
         if reuse_data_type is not list:
-            raise Exception(f"Reuse data is a '{reuse_data_type}' type, must be a list.")
+            raise Exception(
+                f"Reuse data is a '{reuse_data_type}' type, must be a list."
+            )
 
 
 @dataclasses.dataclass(kw_only=True)
@@ -34,6 +36,7 @@ class CreateTicketAction(Action):
     reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
 
     reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
+
     def __post_init__(self, reuse_data):
         if reuse_data:
             self.reuse_data_must_be_list(reuse_data)
@@ -48,6 +51,7 @@ class UpdateTicketAction(Action):
     reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
 
     reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
+
     def __post_init__(self, reuse_data):
         if reuse_data:
             self.reuse_data_must_be_list(reuse_data)
@@ -56,12 +60,12 @@ class UpdateTicketAction(Action):
                 self.reference_data.append(ReferenceData(**data))
 
 
-
 @dataclasses.dataclass(kw_only=True)
 class LinkIssuesAction(Action):
     reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
 
     reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
+
     def __post_init__(self, reuse_data):
         if reuse_data:
             self.reuse_data_must_be_list(reuse_data)
@@ -78,6 +82,7 @@ class TransitionAction(Action):
     reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
 
     reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
+
     def __post_init__(self, reuse_data):
         if reuse_data:
             self.reuse_data_must_be_list(reuse_data)
@@ -97,10 +102,9 @@ class JiraTemplate:
     trigger: dataclasses.InitVar[Trigger]
 
     # with default values procesed in __post_init__
-    jira_actions: list[CreateTicketAction | 
-                       UpdateTicketAction | 
-                       LinkIssuesAction |
-                       TransitionAction] = dataclasses.field(default_factory=list)
+    jira_actions: list[
+        CreateTicketAction | UpdateTicketAction | LinkIssuesAction | TransitionAction
+    ] = dataclasses.field(default_factory=list)
 
     def __post_init__(self, actions, trigger) -> None:
         if trigger:
