@@ -181,7 +181,7 @@ def apply_reference_pool_to_payload(reference_pool: typing.Dict[str, typing.Unio
     for field in fields:
         for ref, v in reference_pool.items():
             # TODO: write tests about replacing values and refactor this
-            if not type(v) in [str, list]:
+            if not isinstance(v, (str, list)):
                 continue
 
             if type(v) is list:
