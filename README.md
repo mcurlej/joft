@@ -22,7 +22,7 @@ To run all tests and type-checker run `tox`.
 
 ## Usage
 
-First you need to have a jira instance and an account on that instance. Then you need get your [API token](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/). To be able to work with JOFT create a config for your JIRA instance in the root of the project folder. There is an default config example you can use in the project folder `joft.config.toml.default`. Just remove the `.default` from the end of the file and add your credentials and you are good to go.
+First you need to have a jira instance and an account on that instance. Then you need get personal access token your [PAT token](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html). To be able to work with JOFT create a config for your JIRA instance in the root of the project folder. There is an default config example you can use in the project folder `joft.config.toml.default`. Just remove the `.default` from the end of the file and add your credentials and you are good to go.
 
 To get help run the tool in CLI withou any options: 
 

@@ -31,7 +31,7 @@ def run(ctx, template: str) -> int:
     logging.info(f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:")
     
     jira_session = jira.JIRA(ctx['jira']['server']['hostname'], 
-                             token_auth=ctx['jira']['server']["api_token"])
+                             token_auth=ctx['jira']['server']["pat_token"])
 
     logging.info("Session established...")  
     logging.info(f"Executing Jira template: {template}")
@@ -49,7 +49,7 @@ def list_issues(ctx, template: str) -> None:
     logging.info(f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:")
 
     jira_session = jira.JIRA(ctx['jira']['server']['hostname'], 
-                             token_auth=ctx['jira']['server']["api_token"])
+                             token_auth=ctx['jira']['server']["pat_token"])
 
     logging.info("Session established...")
     logging.info(f"Executing trigger from Jira template: {template}")
