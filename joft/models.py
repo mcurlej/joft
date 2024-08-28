@@ -95,7 +95,6 @@ class TransitionAction(Action):
 class JiraTemplate:
     api_version: int
     kind: str
-    metadata: typing.Dict[str, str]
 
     # initvars
     actions: dataclasses.InitVar[typing.List[typing.Dict[str, typing.Any]]]
@@ -105,6 +104,8 @@ class JiraTemplate:
     jira_actions: list[
         CreateTicketAction | UpdateTicketAction | LinkIssuesAction | TransitionAction
     ] = dataclasses.field(default_factory=list)
+
+    metadata: typing.Dict[str, str] | None = None
 
     def __post_init__(self, actions, trigger) -> None:
         if trigger:
