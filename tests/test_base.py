@@ -9,7 +9,9 @@ import joft.models
 
 
 def _setup_jira_template_yaml(
-    duplicate_id: bool = False, invalid_action: bool = False
+    duplicate_id: bool = False,
+    invalid_action: bool = False,
+    no_object_ids: bool = False,
 ) -> dict[str, typing.Any]:
     """Setup function that provides different types of yaml structures"""
 
@@ -62,6 +64,10 @@ def _setup_jira_template_yaml(
 
     if invalid_action:
         jira_template_yaml["actions"][0]["type"] = "invalid_action"
+
+    if no_object_ids:
+        for action in jira_template_yaml["actions"]:
+            action.pop("object_id", None)
 
     return jira_template_yaml
 
@@ -350,3 +356,14 @@ def test_validate_template_success(
     assert ret_code == 0
     mock_load_and_parse_yaml.assert_called_once_with(yaml_file_path)
     mock_validate_uniqueness_object_ids.assert_called_once_with(jira_template)
+
+
+def test_object_id_not_present() -> None:
+    """Test that Object IDs are optional, but still present in the dataclasses with
+    None value"""
+
+    jira_template_yaml = _setup_jira_template_yaml(no_object_ids=True)
+    jira_template = joft.models.JiraTemplate(**jira_template_yaml)
+
+    for action in jira_template.jira_actions:
+        assert not action.object_id
