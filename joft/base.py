@@ -148,7 +148,8 @@ def validate_uniqueness_of_object_ids(jira_template: joft.models.JiraTemplate) -
         object_ids.append(jira_template.jira_search.object_id)
 
     for action in jira_template.jira_actions:
-        object_ids.append(action.object_id)
+        if action.object_id:
+            object_ids.append(action.object_id)
 
     # check if all the object ids are unique
     if len(object_ids) != len(set(object_ids)):

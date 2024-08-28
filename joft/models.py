@@ -19,7 +19,6 @@ class ReferenceData:
 class Action:
     # required fields
     type: str
-    object_id: str
     fields: typing.Dict[str, typing.Any]
 
     def reuse_data_must_be_list(self, reuse_data):
@@ -34,6 +33,7 @@ class Action:
 @dataclasses.dataclass(kw_only=True)
 class CreateTicketAction(Action):
     reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
+    object_id: str | None = None
 
     reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
 
@@ -48,6 +48,7 @@ class CreateTicketAction(Action):
 @dataclasses.dataclass(kw_only=True)
 class UpdateTicketAction(Action):
     reference_id: str
+    object_id: str | None = None
     reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
 
     reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
@@ -63,6 +64,7 @@ class UpdateTicketAction(Action):
 @dataclasses.dataclass(kw_only=True)
 class LinkIssuesAction(Action):
     reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
+    object_id: str | None = None
 
     reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
 
@@ -79,6 +81,7 @@ class TransitionAction(Action):
     reference_id: str
     transition: str
     comment: str
+    object_id: str | None = None
     reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
 
     reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)

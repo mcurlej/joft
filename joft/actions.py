@@ -23,7 +23,8 @@ def create_ticket(
 
     logging.info(f"New Jira ticket created: {new_issue.permalink()}")
 
-    reference_pool[action.object_id] = new_issue
+    if action.object_id:
+        reference_pool[action.object_id] = new_issue
 
 
 # TODO jira_session is not needed here. Maybe remove?
@@ -52,6 +53,9 @@ def update_ticket(
     ticket_to.update(action.fields)
 
     logging.info(f"Ticket '{ticket_to.key}' updated.")
+
+    if action.object_id:
+        reference_pool[action.object_id] = ticket_to
 
 
 def link_issues(
@@ -105,3 +109,6 @@ def transition_issue(
     jira_session.transition_issue(
         ticket_to, action.transition, action.fields, action.comment
     )
+
+    if action.object_id:
+        reference_pool[action.object_id] = ticket_to
