@@ -29,7 +29,7 @@ def test_load_invalid_yaml_raise() -> None:
 
 @unittest.mock.patch("joft.utils.pathlib.Path.cwd")
 @unittest.mock.patch("joft.utils.platformdirs")
-def test_load_toml_app_config(mock_platformdirs, mock_cwd):
+def test_load_toml_app_config(mock_platformdirs, mock_cwd) -> None:
     """Test if we can find the app config file in one of the platform dirs"""
     hostname = "test"
     pat_token = "pat_token"
@@ -60,7 +60,7 @@ def test_load_toml_app_config(mock_platformdirs, mock_cwd):
 
 @unittest.mock.patch("joft.utils.pathlib.Path.cwd")
 @unittest.mock.patch("joft.utils.platformdirs")
-def test_load_toml_app_config_no_config_found(mock_platformdirs, mock_cwd):
+def test_load_toml_app_config_no_config_found(mock_platformdirs, mock_cwd) -> None:
     """
     Test that we will end with a non-zero error code when there is no config present and
     printing a message on the stdout.
