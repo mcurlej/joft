@@ -36,6 +36,8 @@ To run the actions from your yaml template file run:
 
 `joft run --template ./<path to your yaml template>`
 
+If you need more verbose output for debugging, define `JOFT_DEBUG=1` environment variable.
+
 ## Docs
 
 Documentation can be found [here](docs/introduction.md).
