@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 
 import click
@@ -6,6 +7,12 @@ import jira
 
 import joft.base
 import joft.utils
+
+
+if os.getenv("JOFT_DEBUG"):
+    logging_level = logging.DEBUG
+else:
+    logging_level = logging.WARNING
 
 
 @click.group()
@@ -26,7 +33,7 @@ def validate(template) -> int:
 @click.option("--template", help="File path to the template file.")
 @click.pass_obj
 def run(ctx, template: str) -> int:
-    logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+    logging.basicConfig(format="%(levelname)s:%(message)s", level=logging_level)
     logging.info(
         f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:"
     )
@@ -47,7 +54,7 @@ def run(ctx, template: str) -> int:
 @click.option("--template", help="File path to the template file.")
 @click.pass_obj
 def list_issues(ctx, template: str) -> None:
-    logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+    logging.basicConfig(format="%(levelname)s:%(message)s", level=logging_level)
     logging.info(
         f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:"
     )
