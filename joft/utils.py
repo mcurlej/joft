@@ -19,7 +19,7 @@ def load_toml_app_config() -> typing.Any:
     possible_paths = set()
 
     possible_paths.add(platformdirs.user_config_dir())
-    possible_paths.update(*platformdirs.site_config_dir(multipath=True).split(":"))
+    possible_paths.update(platformdirs.site_config_dir(multipath=True).split(":"))
     possible_paths.add("/etc")
     possible_paths.add(str(pathlib.Path.cwd()))
 
