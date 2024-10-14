@@ -30,32 +30,31 @@ def test_load_invalid_yaml_raise() -> None:
 @unittest.mock.patch("joft.utils.pathlib.Path.cwd")
 @unittest.mock.patch("joft.utils.platformdirs")
 def test_load_toml_app_config(mock_platformdirs, mock_cwd) -> None:
-    """Test if we can find the app config file in one of the platform dirs"""
-    hostname = "test"
-    pat_token = "pat_token"
+    """Test if we can find the app config file in one of the platform dirs
 
-    config_file_contents = b"""[jira.server]
-    hostname = "test"
-    pat_token = "pat_token"
+    Assert that user_config_dir is preferred over site_config_dir."""
+    config_file_contents = """[jira.server]
+    hostname = "{name}"
+    pat_token = "__pat_token__"
     """
 
     with tempfile.TemporaryDirectory() as tmpdir:
         mock_cwd.return_value = tmpdir
         dir_names = ["etc", ".config"]
         for name in dir_names:
-            config_dir = tmpdir + "/" + name
+            config_dir = os.path.join(tmpdir, name)
             os.makedirs(config_dir)
 
-        with open(tmpdir + "/" + dir_names[1] + "/" + "joft.config.toml", "wb") as fp:
-            fp.write(config_file_contents)
+            with open(os.path.join(config_dir, "joft.config.toml"), "w") as fp:
+                fp.write(config_file_contents.format(name=name))
 
-        mock_platformdirs.user_config_dir.return_value = tmpdir + "/" + ".config"
-        mock_platformdirs.site_config_dir.return_value = ""
+        mock_platformdirs.user_config_dir.return_value = os.path.join(tmpdir, ".config")
+        mock_platformdirs.site_config_dir.return_value = os.path.join(tmpdir, "etc")
 
         config = joft.utils.load_toml_app_config()
 
-    assert config["jira"]["server"]["hostname"] == hostname
-    assert config["jira"]["server"]["pat_token"] == pat_token
+    assert config["jira"]["server"]["hostname"] == ".config"
+    assert config["jira"]["server"]["pat_token"] == "__pat_token__"
 
 
 @unittest.mock.patch("joft.utils.pathlib.Path.cwd")
