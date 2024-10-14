@@ -1,0 +1,3 @@
+recursive-include tests *.yaml *.py
+include tox.ini
+include CHANGELOG.md
