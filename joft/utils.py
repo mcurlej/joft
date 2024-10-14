@@ -16,12 +16,12 @@ def load_and_parse_yaml_file(path: str) -> typing.Dict[str, typing.Any]:
 
 
 def load_toml_app_config() -> typing.Any:
-    possible_paths = set()
+    possible_paths = []
 
-    possible_paths.add(platformdirs.user_config_dir())
-    possible_paths.update(platformdirs.site_config_dir(multipath=True).split(":"))
-    possible_paths.add("/etc")
-    possible_paths.add(str(pathlib.Path.cwd()))
+    possible_paths.append(str(pathlib.Path.cwd()))
+    possible_paths.append(platformdirs.user_config_dir())
+    possible_paths.extend(platformdirs.site_config_dir(multipath=True).split(":"))
+    possible_paths.append("/etc")
 
     for path in possible_paths:
         config_file_path = pathlib.Path(path) / "joft.config.toml"
