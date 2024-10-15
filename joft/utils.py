@@ -22,13 +22,10 @@ def read_and_validate_config(
     with open(path, "rb") as fp:
         config = tomllib.load(fp)
 
-    try:
-        config["jira"]["server"]["hostname"]
-        config["jira"]["server"]["pat_token"]
-    except KeyError:
-        return None
-    else:
-        return config
+    config["jira"]["server"]["hostname"]
+    config["jira"]["server"]["pat_token"]
+
+    return config
 
 
 def load_toml_app_config() -> typing.Any:
@@ -42,11 +39,13 @@ def load_toml_app_config() -> typing.Any:
     for path in possible_paths:
         config_file_path = pathlib.Path(path) / "joft.config.toml"
         if config_file_path.is_file():
-            if config := read_and_validate_config(config_file_path):
-                return config
-            else:
+            try:
+                config = read_and_validate_config(config_file_path)
+            except Exception as e:
                 err_msg = textwrap.dedent(f"""\
-                    [ERROR] Configuration file {config_file_path} is invalid.
+                    [ERROR] Configuration file {config_file_path} is invalid:
+
+                    {type(e).__name__} - {str(e)}
 
                     Configuration file should have the following content:
 
@@ -59,6 +58,8 @@ def load_toml_app_config() -> typing.Any:
                 """)
                 print(err_msg)
                 sys.exit(1)
+            else:
+                return config
     else:
         err_msg = textwrap.dedent(f"""\
             [ERROR] Cannot find configuration file 'joft.config.toml'.

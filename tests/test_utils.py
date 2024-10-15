@@ -106,27 +106,28 @@ def test_load_toml_app_config_invalid_config_found(mock_cwd) -> None:
                 joft.utils.load_toml_app_config()
 
     assert f"Configuration file {config_file_path} is invalid" in mock_stdout.getvalue()
+    assert "KeyError - 'hostname'" in mock_stdout.getvalue()
     assert sys_exit.value.args[0] == 1
 
 
 @pytest.mark.parametrize(
-    "config_file_content, valid",
+    "config_file_content, raises",
     [
-        ("[jira.server]\nhostname = 'foo'\npat_token = 'bar'", True),
-        ("", False),
-        ("[jira.server]\nhostname = 'foo'", False),
-        ("[jira.server]\npat_token = 'bar'", False),
-        ("hostname = 'foo'\npat_token = 'bar'", False),
+        ("[jira.server]\nhostname = 'foo'\npat_token = 'bar'", None),
+        ("", KeyError),
+        ("[jira.server]\nhostname = 'foo'", KeyError),
+        ("[jira.server]\npat_token = 'bar'", KeyError),
+        ("hostname = 'foo'\npat_token = 'bar'", KeyError),
     ],
 )
-def test_read_and_validate_config(config_file_content, valid, tmp_path) -> None:
+def test_read_and_validate_config(config_file_content, raises, tmp_path) -> None:
     config_file_path = tmp_path / "joft.config.toml"
     config_file_path.write_text(config_file_content)
 
-    config = joft.utils.read_and_validate_config(config_file_path)
-
-    if valid:
+    if raises is None:
+        config = joft.utils.read_and_validate_config(config_file_path)
         assert config["jira"]["server"]["hostname"] == "foo"
         assert config["jira"]["server"]["pat_token"] == "bar"
     else:
-        assert config is None
+        with pytest.raises(raises):
+            config = joft.utils.read_and_validate_config(config_file_path)
