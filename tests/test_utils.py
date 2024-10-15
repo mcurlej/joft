@@ -79,5 +79,28 @@ def test_load_toml_app_config_no_config_found(mock_platformdirs, mock_cwd) -> No
             with pytest.raises(SystemExit) as sys_exit:
                 joft.utils.load_toml_app_config()
 
-    assert "Cannot find configuration file" in mock_stdout.getvalue()
+    assert "Cannot find valid configuration file" in mock_stdout.getvalue()
     assert sys_exit.value.args[0] == 1
+
+
+@pytest.mark.parametrize(
+    "config_file_content, valid",
+    [
+        ("[jira.server]\nhostname = 'foo'\npat_token = 'bar'", True),
+        ("", False),
+        ("[jira.server]\nhostname = 'foo'", False),
+        ("[jira.server]\npat_token = 'bar'", False),
+        ("hostname = 'foo'\npat_token = 'bar'", False),
+    ],
+)
+def test_read_and_validate_config(config_file_content, valid, tmp_path) -> None:
+    config_file_path = tmp_path / "joft.config.toml"
+    config_file_path.write_text(config_file_content)
+
+    config = joft.utils.read_and_validate_config(config_file_path)
+
+    if valid:
+        assert config["jira"]["server"]["hostname"] == "foo"
+        assert config["jira"]["server"]["pat_token"] == "bar"
+    else:
+        assert config is None
