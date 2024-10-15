@@ -44,9 +44,24 @@ def load_toml_app_config() -> typing.Any:
         if config_file_path.is_file():
             if config := read_and_validate_config(config_file_path):
                 return config
+            else:
+                err_msg = textwrap.dedent(f"""\
+                    [ERROR] Configuration file {config_file_path} is invalid.
+
+                    Configuration file should have the following content:
+
+                    [jira.server]
+                    hostname = "<your jira server url>"
+                    pat_token = "<your jira pat token>"
+
+                    and should be stored in one of the following directories:
+                    {', '.join(possible_paths)}\
+                """)
+                print(err_msg)
+                sys.exit(1)
     else:
         err_msg = textwrap.dedent(f"""\
-            [ERROR] Cannot find valid configuration file 'joft.config.toml'.
+            [ERROR] Cannot find configuration file 'joft.config.toml'.
 
             Create the file with the following content:
 

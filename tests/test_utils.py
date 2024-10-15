@@ -79,7 +79,33 @@ def test_load_toml_app_config_no_config_found(mock_platformdirs, mock_cwd) -> No
             with pytest.raises(SystemExit) as sys_exit:
                 joft.utils.load_toml_app_config()
 
-    assert "Cannot find valid configuration file" in mock_stdout.getvalue()
+    assert "Cannot find configuration file" in mock_stdout.getvalue()
+    assert sys_exit.value.args[0] == 1
+
+
+@unittest.mock.patch("joft.utils.pathlib.Path.cwd")
+def test_load_toml_app_config_invalid_config_found(mock_cwd) -> None:
+    """
+    Test that we will end with a non-zero error code when there is an invalid
+    config present and printing a message on the stdout.
+    """
+
+    invalid_config_file_contents = """[jira.server]
+    pat_token = "__pat_token__"
+    """
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        mock_cwd.return_value = tmpdir
+
+        config_file_path = os.path.join(tmpdir, "joft.config.toml")
+        with open(config_file_path, "w") as fp:
+            fp.write(invalid_config_file_contents)
+
+        with unittest.mock.patch("sys.stdout", new=io.StringIO()) as mock_stdout:
+            with pytest.raises(SystemExit) as sys_exit:
+                joft.utils.load_toml_app_config()
+
+    assert f"Configuration file {config_file_path} is invalid" in mock_stdout.getvalue()
     assert sys_exit.value.args[0] == 1
 
 
