@@ -15,6 +15,19 @@ def load_and_parse_yaml_file(path: str) -> typing.Dict[str, typing.Any]:
     return yaml_obj
 
 
+def read_and_validate_config(
+    path: str | pathlib.Path,
+) -> typing.Dict[str, typing.Any] | None:
+    """Read and return config file is it's valid. Return None otherwise."""
+    with open(path, "rb") as fp:
+        config = tomllib.load(fp)
+
+    config["jira"]["server"]["hostname"]
+    config["jira"]["server"]["pat_token"]
+
+    return config
+
+
 def load_toml_app_config() -> typing.Any:
     possible_paths = []
 
@@ -26,7 +39,27 @@ def load_toml_app_config() -> typing.Any:
     for path in possible_paths:
         config_file_path = pathlib.Path(path) / "joft.config.toml"
         if config_file_path.is_file():
-            break
+            try:
+                config = read_and_validate_config(config_file_path)
+            except Exception as e:
+                err_msg = textwrap.dedent(f"""\
+                    [ERROR] Configuration file {config_file_path} is invalid:
+
+                    {type(e).__name__} - {str(e)}
+
+                    Configuration file should have the following content:
+
+                    [jira.server]
+                    hostname = "<your jira server url>"
+                    pat_token = "<your jira pat token>"
+
+                    and should be stored in one of the following directories:
+                    {', '.join(possible_paths)}\
+                """)
+                print(err_msg)
+                sys.exit(1)
+            else:
+                return config
     else:
         err_msg = textwrap.dedent(f"""\
             [ERROR] Cannot find configuration file 'joft.config.toml'.
@@ -43,8 +76,3 @@ def load_toml_app_config() -> typing.Any:
 
         print(err_msg)
         sys.exit(1)
-
-    with open(config_file_path, "rb") as fp:
-        config = tomllib.load(fp)
-
-    return config
