@@ -326,7 +326,7 @@ def test_execute_template_exit_no_tickets(
 
         ret_code = joft.base.execute_template(yaml_file_path, mock_jira_session)
 
-    assert ret_code == 1
+    assert ret_code == 0
 
     assert mock_execute_actions_per_trigger_ticket.call_count == 0
     assert mock_execute_actions.call_count == 0

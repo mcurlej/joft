@@ -65,7 +65,7 @@ def execute_template(template_file_path: str, jira_session: jira.JIRA) -> int:
                     f"'{jira_template.jira_search.jql}'!"
                 )
             )
-            return 1
+            return 0
 
         # when the jira query is successfull the actions of template will be then executed
         # for each ticket in the query
