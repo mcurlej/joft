@@ -84,6 +84,7 @@ def execute_actions(
         str, typing.Union[str, jira.Issue | str | typing.List[str]]
     ] = {},
 ) -> None:
+    import pdb; pdb.set_trace()
     for action in jira_template.jira_actions:
         # we deep copy each action from the template
         # each run of all the actions needs each action to retain its references
@@ -214,6 +215,7 @@ def update_reference_pool(
                         ref_object.fields.project, "key"
                     )
                 case _:
+                    import pdb; pdb.set_trace()
                     reference_pool[f"{ref.reference_id}.{field}"] = getattr(
                         ref_object.fields, field
                     )
