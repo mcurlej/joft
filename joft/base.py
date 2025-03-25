@@ -232,6 +232,14 @@ def apply_reference_pool_to_payload(
     """
 
     for field in fields:
+        # if the value is an simple value (string, int, float, bool) we skip it
+        if (
+            type(fields[field]) is int
+            or type(fields[field]) is float
+            or type(fields[field]) is bool
+        ):
+            continue
+
         for ref, v in reference_pool.items():
             # TODO: write tests about replacing values and refactor this
             if not isinstance(v, (str, list)):

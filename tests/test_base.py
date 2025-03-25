@@ -232,11 +232,18 @@ def test_apply_reference_pool_to_payload() -> None:
         "project": {"name": "${issue.key}"},
         "issuetype": {"name": "Story"},
         "summary": "${issue.summary}",
+        "story_points": 5,
+        "constant": 3.14,
+        "is_parent": True,
     }
     joft.base.apply_reference_pool_to_payload(mock_reference_pool, mock_fields)
 
     assert mock_fields["project"]["name"] == mock_reference_pool["issue.key"]
     assert mock_fields["summary"] == mock_reference_pool["issue.summary"]
+    assert mock_fields["issuetype"]["name"] == "Story"
+    assert mock_fields["story_points"] == 5
+    assert mock_fields["constant"] == 3.14
+    assert mock_fields["is_parent"] is True
 
 
 def test_multiple_references_in_str_field() -> None:
