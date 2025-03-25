@@ -233,11 +233,7 @@ def apply_reference_pool_to_payload(
 
     for field in fields:
         # if the value is an simple value (string, int, float, bool) we skip it
-        if (
-            type(fields[field]) is int
-            or type(fields[field]) is float
-            or type(fields[field]) is bool
-        ):
+        if type(fields[field]) in (int, float, bool):
             continue
 
         for ref, v in reference_pool.items():
