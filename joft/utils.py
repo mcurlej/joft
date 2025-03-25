@@ -54,7 +54,7 @@ def load_toml_app_config() -> typing.Any:
                     pat_token = "<your jira pat token>"
 
                     and should be stored in one of the following directories:
-                    {', '.join(possible_paths)}\
+                    {", ".join(possible_paths)}\
                 """)
                 print(err_msg)
                 sys.exit(1)
@@ -71,7 +71,7 @@ def load_toml_app_config() -> typing.Any:
             pat_token = "<your jira pat token>"
 
             in one of the following directories:
-            {', '.join(possible_paths)}\
+            {", ".join(possible_paths)}\
         """)
 
         print(err_msg)
