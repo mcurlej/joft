@@ -16,9 +16,13 @@ else:
 
 
 @click.group()
+@click.option("--config", help="Path to the config file.")
 @click.pass_context
-def main(ctx) -> None:
-    ctx.obj = joft.utils.load_toml_app_config()
+def main(ctx, config: str) -> None:
+    """
+    A CLI automation tool which interacts with a Jira instance and automates tasks.
+    """
+    ctx.obj = joft.utils.load_toml_app_config(config_path=config)
 
 
 # TODO: refactor th CLI interface so it makes more sense
