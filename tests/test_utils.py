@@ -110,24 +110,54 @@ def test_load_toml_app_config_invalid_config_found(mock_cwd) -> None:
     assert sys_exit.value.args[0] == 1
 
 
-@pytest.mark.parametrize(
-    "config_file_content, raises",
-    [
-        ("[jira.server]\nhostname = 'foo'\npat_token = 'bar'", None),
-        ("", KeyError),
-        ("[jira.server]\nhostname = 'foo'", KeyError),
-        ("[jira.server]\npat_token = 'bar'", KeyError),
-        ("hostname = 'foo'\npat_token = 'bar'", KeyError),
-    ],
-)
-def test_read_and_validate_config(config_file_content, raises, tmp_path) -> None:
+def test_load_toml_app_config_with_config_option(tmp_path) -> None:
+    """Test if we can load the app config file using the --config option."""
+    config_file_contents = """[jira.server]
+hostname = 'config_option'
+pat_token = '__pat_token__'"""
     config_file_path = tmp_path / "joft.config.toml"
-    config_file_path.write_text(config_file_content)
+    config_file_path.write_text(config_file_contents)
 
-    if raises is None:
-        config = joft.utils.read_and_validate_config(config_file_path)
-        assert config["jira"]["server"]["hostname"] == "foo"
-        assert config["jira"]["server"]["pat_token"] == "bar"
-    else:
-        with pytest.raises(raises):
-            config = joft.utils.read_and_validate_config(config_file_path)
+    config = joft.utils.load_toml_app_config(config_path=str(config_file_path))
+
+    assert config["jira"]["server"]["hostname"] == "config_option"
+    assert config["jira"]["server"]["pat_token"] == "__pat_token__"
+
+
+def test_load_toml_app_config_config_option_priority(tmp_path, monkeypatch) -> None:
+    """Test that the --config option takes priority over default config files."""
+    default_config_contents = """[jira.server]
+hostname = 'default_config'
+pat_token = '__pat_token__'"""
+    config_option_contents = """[jira.server]
+hostname = 'config_option'
+pat_token = '__pat_token__'"""
+
+    default_config_path = tmp_path / "default_joft.config.toml"
+    default_config_path.write_text(default_config_contents)
+    config_option_path = tmp_path / "config_joft.config.toml"
+    config_option_path.write_text(config_option_contents)
+
+    monkeypatch.setattr(
+        joft.utils.platformdirs, "user_config_dir", lambda: str(tmp_path)
+    )
+
+    config = joft.utils.load_toml_app_config(config_path=str(config_option_path))
+
+    assert config["jira"]["server"]["hostname"] == "config_option"
+    assert config["jira"]["server"]["pat_token"] == "__pat_token__"
+
+
+def test_load_toml_app_config_invalid_config_option_path() -> None:
+    """Test that an invalid --config path raises a SystemExit."""
+    with unittest.mock.patch("sys.stdout", new=io.StringIO()) as mock_stdout:
+        with pytest.raises(SystemExit) as sys_exit:
+            joft.utils.load_toml_app_config(
+                config_path="/invalid/path/joft.config.toml"
+            )
+
+    assert (
+        "Config file not found: /invalid/path/joft.config.toml"
+        in mock_stdout.getvalue()
+    )
+    assert sys_exit.value.args[0] == 1
