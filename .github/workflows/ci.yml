@@ -20,7 +20,7 @@ jobs:
         tox_env: ${{ matrix.tox_env }}
     strategy:
       matrix:
-        tox_env: [py311, py312, type, lint]
+        tox_env: [py311, py312, py313, type, lint]
 
     # Use GitHub's Linux Docker host
     runs-on: ubuntu-latest
