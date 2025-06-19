@@ -1,4 +1,5 @@
-import unittest.mock
+import unittest
+from typing import Any, Dict
 
 import pytest
 
@@ -6,10 +7,10 @@ import joft.actions
 import joft.models
 
 
-def test_create_ticket():
+def test_create_ticket() -> None:
     """Testing the execution of the create-ticket action"""
     mock_jira_session = unittest.mock.MagicMock()
-    create_ticket_template = {
+    create_ticket_template: Dict[str, Any] = {
         "object_id": "ticket",
         "type": "create-ticket",
         "fields": {
@@ -19,7 +20,7 @@ def test_create_ticket():
             "description": "Test the creation of ticket",
         },
     }
-    mock_reference_pool = {}
+    mock_reference_pool: Dict[str, Any] = {}
 
     new_issue = unittest.mock.MagicMock()
     new_issue.key = "TEST-456"
@@ -36,14 +37,14 @@ def test_create_ticket():
     assert mock_reference_pool["ticket"].key == "TEST-456"
 
 
-def test_create_ticket_with_references():
+def test_create_ticket_with_references() -> None:
     """
     Testing the execution of the create-ticket action with references to a ticket already
     present in the reference_pool.
     """
 
     mock_jira_session = unittest.mock.MagicMock()
-    create_ticket_template = {
+    create_ticket_template: Dict[str, Any] = {
         "object_id": "ticket",
         "type": "create-ticket",
         "reuse_data": [
@@ -56,7 +57,7 @@ def test_create_ticket_with_references():
             "description": "${issue.description}",
         },
     }
-    mock_reference_pool = {}
+    mock_reference_pool: Dict[str, Any] = {}
 
     mock_reference_issue = unittest.mock.MagicMock()
     mock_reference_issue.key = "TEST-123"
@@ -65,7 +66,7 @@ def test_create_ticket_with_references():
 
     mock_reference_pool["issue"] = mock_reference_issue
 
-    def create_issue(fields):
+    def create_issue(fields: Dict[str, Any]) -> unittest.mock.MagicMock:
         new_issue = unittest.mock.MagicMock()
         new_issue.key = "TEST-456"
         new_issue.fields.summary = fields["summary"]
@@ -93,8 +94,8 @@ def test_create_ticket_with_references():
     assert description == mock_reference_pool["ticket"].fields.description
 
 
-def test_reuse_data_must_be_list():
-    create_ticket_template = {
+def test_reuse_data_must_be_list() -> None:
+    create_ticket_template: Dict[str, Any] = {
         "object_id": "ticket",
         "type": "create-ticket",
         "reuse_data": {"reference_id": "test"},
@@ -113,9 +114,9 @@ def test_reuse_data_must_be_list():
     assert "must be a list" in ex.value.args[0]
 
 
-def test_update_ticket():
+def test_update_ticket() -> None:
     """We test the update-ticket action and it succesfull execution."""
-    update_ticket_template = {
+    update_ticket_template: Dict[str, Any] = {
         "object_id": "update-story",
         "type": "update-ticket",
         "reference_id": "issue",
@@ -125,7 +126,7 @@ def test_update_ticket():
 
     mock_jira_session = unittest.mock.MagicMock()
 
-    mock_reference_pool = {}
+    mock_reference_pool: Dict[str, Any] = {}
 
     mock_reference_issue = unittest.mock.MagicMock()
     mock_reference_issue.key = "TEST-123"
@@ -140,12 +141,12 @@ def test_update_ticket():
     mock_reference_issue.update.assert_called_once_with(update_ticket_action.fields)
 
 
-def test_update_ticket_reference_invalid():
+def test_update_ticket_reference_invalid() -> None:
     """We should raise if a reference_id is invalid."""
 
     bad_reference_id = "bad_reference_id"
 
-    update_ticket_template = {
+    update_ticket_template: Dict[str, Any] = {
         "object_id": "update-story",
         "type": "update-ticket",
         "reference_id": bad_reference_id,
@@ -155,7 +156,7 @@ def test_update_ticket_reference_invalid():
 
     mock_jira_session = unittest.mock.MagicMock()
 
-    mock_reference_pool = {}
+    mock_reference_pool: Dict[str, Any] = {}
 
     with pytest.raises(Exception) as ex:
         joft.actions.update_ticket(
@@ -167,9 +168,9 @@ def test_update_ticket_reference_invalid():
     assert bad_reference_id in ex.value.args[0].lower()
 
 
-def test_link_ticket():
+def test_link_ticket() -> None:
     """We test the link-issues action and it succesfull execution."""
-    link_issue_template = {
+    link_issue_template: Dict[str, Any] = {
         "type": "link-issues",
         "object_id": "link-bug-and-epic",
         "fields": {
@@ -183,7 +184,7 @@ def test_link_ticket():
 
     mock_jira_session = unittest.mock.MagicMock()
 
-    mock_reference_pool = {}
+    mock_reference_pool: Dict[str, Any] = {}
 
     joft.actions.link_issues(link_issue_action, mock_jira_session, mock_reference_pool)
 
@@ -196,12 +197,12 @@ def test_link_ticket():
     )
 
 
-def test_transition_ticket_invalid_ref_raise():
+def test_transition_ticket_invalid_ref_raise() -> None:
     """We transition a ticket to another status with comment"""
 
     bad_reference_id = "bad_ref"
 
-    transition_issue_template = {
+    transition_issue_template: Dict[str, Any] = {
         "type": "transition",
         "object_id": "close-bug",
         "reference_id": bad_reference_id,
@@ -215,7 +216,7 @@ def test_transition_ticket_invalid_ref_raise():
     mock_jira_session = unittest.mock.MagicMock()
     mock_bug = unittest.mock.MagicMock()
 
-    mock_reference_pool = {
+    mock_reference_pool: Dict[str, Any] = {
         "bug": mock_bug,
     }
 
@@ -229,10 +230,10 @@ def test_transition_ticket_invalid_ref_raise():
     assert bad_reference_id in ex.value.args[0].lower()
 
 
-def test_transition_ticket():
+def test_transition_ticket() -> None:
     """We transition a ticket to another status with comment"""
 
-    transition_issue_template = {
+    transition_issue_template: Dict[str, Any] = {
         "type": "transition",
         "object_id": "close-bug",
         "reference_id": "bug",
@@ -246,7 +247,7 @@ def test_transition_ticket():
     mock_jira_session = unittest.mock.MagicMock()
     mock_bug = unittest.mock.MagicMock()
 
-    mock_reference_pool = {
+    mock_reference_pool: Dict[str, Any] = {
         "bug": mock_bug,
     }
 

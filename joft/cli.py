@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from typing import Optional, Dict, Any
 
 import click
 import jira
@@ -18,7 +19,7 @@ else:
 @click.group()
 @click.option("--config", help="Path to the config file.")
 @click.pass_context
-def main(ctx, config: str) -> None:
+def main(ctx: click.Context, config: Optional[str]) -> None:
     """
     A CLI automation tool which interacts with a Jira instance and automates tasks.
     """
@@ -28,7 +29,7 @@ def main(ctx, config: str) -> None:
 # TODO: refactor th CLI interface so it makes more sense
 @main.command(name="validate")
 @click.option("--template", help="File path to the template file.")
-def validate(template) -> int:
+def validate(template: str) -> int:
     ret_code = joft.base.validate_template(template)
     sys.exit(ret_code)
 
@@ -36,7 +37,7 @@ def validate(template) -> int:
 @main.command(name="run")
 @click.option("--template", help="File path to the template file.")
 @click.pass_obj
-def run(ctx, template: str) -> int:
+def run(ctx: Dict[str, Any], template: str) -> int:
     logging.basicConfig(format="%(levelname)s:%(message)s", level=logging_level)
     logging.info(
         f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:"
@@ -57,7 +58,7 @@ def run(ctx, template: str) -> int:
 @main.command(name="list-issues")
 @click.option("--template", help="File path to the template file.")
 @click.pass_obj
-def list_issues(ctx, template: str) -> None:
+def list_issues(ctx: Dict[str, Any], template: str) -> None:
     logging.basicConfig(format="%(levelname)s:%(message)s", level=logging_level)
     logging.info(
         f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:"

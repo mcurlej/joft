@@ -1,13 +1,14 @@
 import pytest
+from typing import Any, Dict
 
 import joft.models
 
 
-def test_jira_template_post_init():
+def test_jira_template_post_init() -> None:
     """Test the post init method of a dataclass. All the correct types
     should be assigned."""
 
-    jira_template_yaml = {
+    jira_template_yaml: Dict[str, Any] = {
         "api_version": 1,
         "kind": "jira-template",
         "metadata": {"name": "test", "description": "test"},
@@ -74,10 +75,10 @@ def test_jira_template_post_init():
     assert type(jira_template.jira_search) is joft.models.Trigger
 
 
-def test_reuse_data_must_be_list():
+def test_reuse_data_must_be_list() -> None:
     """Raise if the reuse_data property is something else than a list."""
 
-    jira_template_yaml = {
+    jira_template_yaml: Dict[str, Any] = {
         "api_version": 1,
         "kind": "jira-template",
         "metadata": {"name": "test", "description": "test"},
@@ -117,7 +118,7 @@ def test_execute_actions_invalid_action_raise() -> None:
     initial yaml file."""
 
     bad_type = "new-ticket"
-    jira_template_yaml = {
+    jira_template_yaml: Dict[str, Any] = {
         "api_version": 1,
         "kind": "jira-template",
         "metadata": {"name": "test", "description": "test"},

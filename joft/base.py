@@ -1,10 +1,9 @@
 import copy
 import logging
-import typing
+from typing import Dict, Union, List, Any, cast
 
 import jira
 import jira.client
-import jira.resources
 import tabulate
 
 import joft.actions
@@ -13,9 +12,7 @@ import joft.utils
 
 
 def load_and_validate_template(template_file_path: str) -> joft.models.JiraTemplate:
-    template: typing.Dict[str, typing.Any] = joft.utils.load_and_parse_yaml_file(
-        template_file_path
-    )
+    template: Dict[str, Any] = joft.utils.load_and_parse_yaml_file(template_file_path)
     jira_template = joft.models.JiraTemplate(**template)
 
     logging.info("Yaml file loaded...")
@@ -27,14 +24,16 @@ def load_and_validate_template(template_file_path: str) -> joft.models.JiraTempl
     return jira_template
 
 
-def search_issues(jira_template: joft.models.JiraTemplate, jira_session: jira.JIRA):
-    return typing.cast(
+def search_issues(
+    jira_template: joft.models.JiraTemplate, jira_session: jira.JIRA
+) -> jira.client.ResultList[jira.Issue]:
+    return cast(
         jira.client.ResultList[jira.Issue],
         jira_session.search_issues(jira_template.jira_search.jql),
     )
 
 
-def list_issues(template_file_path: str, jira_session: jira.JIRA):
+def list_issues(template_file_path: str, jira_session: jira.JIRA) -> str:
     jira_template = load_and_validate_template(template_file_path)
 
     trigger_result = search_issues(jira_template, jira_session)
@@ -80,9 +79,7 @@ def execute_template(template_file_path: str, jira_session: jira.JIRA) -> int:
 def execute_actions(
     jira_template: joft.models.JiraTemplate,
     jira_session: jira.JIRA,
-    reference_pool: typing.Dict[
-        str, typing.Union[str, jira.Issue | str | typing.List[str]]
-    ] = {},
+    reference_pool: Dict[str, Union[str, jira.Issue, List[str]]] = {},
 ) -> None:
     for action in jira_template.jira_actions:
         # we deep copy each action from the template
@@ -91,32 +88,34 @@ def execute_actions(
         match action.type:
             case "create-ticket":
                 joft.actions.create_ticket(
-                    typing.cast(joft.models.CreateTicketAction, copy.deepcopy(action)),
+                    cast(joft.models.CreateTicketAction, copy.deepcopy(action)),
                     jira_session,
                     reference_pool,
                 )
             case "update-ticket":
                 joft.actions.update_ticket(
-                    typing.cast(joft.models.UpdateTicketAction, copy.deepcopy(action)),
+                    cast(joft.models.UpdateTicketAction, copy.deepcopy(action)),
                     jira_session,
                     reference_pool,
                 )
             case "link-issues":
                 joft.actions.link_issues(
-                    typing.cast(joft.models.LinkIssuesAction, copy.deepcopy(action)),
+                    cast(joft.models.LinkIssuesAction, copy.deepcopy(action)),
                     jira_session,
                     reference_pool,
                 )
             case "transition":
                 joft.actions.transition_issue(
-                    typing.cast(joft.models.TransitionAction, copy.deepcopy(action)),
+                    cast(joft.models.TransitionAction, copy.deepcopy(action)),
                     jira_session,
                     reference_pool,
                 )
+            case _:
+                logging.warning(f"Unknown action type: {action.type}")
 
 
 def execute_actions_per_trigger_ticket(
-    trigger_result: typing.List[jira.Issue],
+    trigger_result: List[jira.Issue],
     jira_template: joft.models.JiraTemplate,
     jira_session: jira.JIRA,
 ) -> None:
@@ -129,9 +128,7 @@ def execute_actions_per_trigger_ticket(
     # of a create-ticket action is the created ticket.
     # The reference pool should be shared between all actions so they can reference data
     # from it through 'reuse-data' sections and reuse the data from the referenced objects
-    reference_pool: typing.Dict[
-        str, typing.Union[str, jira.Issue | str | typing.List[str]]
-    ] = {}
+    reference_pool: Dict[str, Union[str, jira.Issue, List[str]]] = {}
 
     for ticket in trigger_result:
         reference_pool[jira_template.jira_search.object_id] = ticket
@@ -142,7 +139,7 @@ def execute_actions_per_trigger_ticket(
 def validate_uniqueness_of_object_ids(jira_template: joft.models.JiraTemplate) -> None:
     """Validate check if the object ids defined by the user are unique."""
 
-    object_ids: typing.List[str] = []
+    object_ids: List[str] = []
 
     if jira_template.jira_search:
         object_ids.append(jira_template.jira_search.object_id)
@@ -163,20 +160,16 @@ def validate_uniqueness_of_object_ids(jira_template: joft.models.JiraTemplate) -
 
 
 def validate_template(template_file_path: str) -> int:
-    template: typing.Dict[str, typing.Any] = joft.utils.load_and_parse_yaml_file(
-        template_file_path
-    )
+    template: Dict[str, Any] = joft.utils.load_and_parse_yaml_file(template_file_path)
     jira_template = joft.models.JiraTemplate(**template)
     validate_uniqueness_of_object_ids(jira_template)
     return 0
 
 
 def update_reference_pool(
-    reference_data: typing.List[joft.models.ReferenceData],
-    reference_pool: typing.Dict[
-        str, typing.Union[str, jira.Issue, typing.List[typing.Any]]
-    ],
-):
+    reference_data: List[joft.models.ReferenceData],
+    reference_pool: Dict[str, Union[str, jira.Issue, List[Any]]],
+) -> None:
     """We update the reference_pool with the references from the reuse_data section"""
 
     for ref in reference_data:
@@ -185,7 +178,7 @@ def update_reference_pool(
                 f"The reference id '{ref.reference_id}' is used before it was declared."
             )
 
-        ref_object = typing.cast(jira.Issue, reference_pool[ref.reference_id])
+        ref_object = cast(jira.Issue, reference_pool[ref.reference_id])
 
         # different fields have a different location in the jira issue object
         # we need to appropriate this when extracting the values
@@ -204,11 +197,10 @@ def update_reference_pool(
                         ref_object.fields.priority.name
                     )
                 case "components":
-                    reference_pool[f"{ref.reference_id}.{field}"] = []
+                    components_list: List[Dict[str, str]] = []
+                    reference_pool[f"{ref.reference_id}.{field}"] = components_list
                     for component in ref_object.fields.components:
-                        typing.cast(
-                            list, reference_pool[f"{ref.reference_id}.{field}"]
-                        ).append({"name": component.name})
+                        components_list.append({"name": component.name})
                 case "project":
                     reference_pool[f"{ref.reference_id}.{field}"] = getattr(
                         ref_object.fields.project, "key"
@@ -220,10 +212,8 @@ def update_reference_pool(
 
 
 def apply_reference_pool_to_payload(
-    reference_pool: typing.Dict[
-        str, typing.Union[str, jira.Issue | str | typing.List[str]]
-    ],
-    fields: typing.Any,
+    reference_pool: Dict[str, Union[str, jira.Issue, List[str]]],
+    fields: Any,
 ) -> None:
     """
     Apply the reference_pool to the payload that will be sent to Jira via REST request.
@@ -269,7 +259,7 @@ def apply_reference_pool_to_payload(
                 if field == "labels":
                     fields[field] = list(
                         map(
-                            lambda label: replace_ref(label, ref, typing.cast(str, v)),
+                            lambda label: replace_ref(label, ref, cast(str, v)),
                             fields[field],
                         )
                     )
@@ -280,4 +270,5 @@ def apply_reference_pool_to_payload(
 
 
 def replace_ref(field: str, ref: str, value: str) -> str:
-    return field.replace("${" + ref + "}", value)
+    """Replace a reference in a field with its value."""
+    return field.replace(f"${{{ref}}}", value)
