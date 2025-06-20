@@ -1,19 +1,30 @@
 import logging
-import typing
+from typing import Dict, Union, List, cast, Any
 
 import jira
 
 import joft.models
 import joft.base
 
+# Type aliases for better readability
+ReferencePoolType = Dict[str, Union[str, jira.Issue, List[Any]]]
+
 
 def create_ticket(
     action: joft.models.CreateTicketAction,
     jira_session: jira.JIRA,
-    reference_pool: typing.Dict[
-        str, typing.Union[str, jira.Issue | str | typing.List[str]]
-    ],
-):
+    reference_pool: ReferencePoolType,
+) -> None:
+    """Create a new JIRA ticket based on the action configuration.
+
+    Args:
+        action: The create ticket action configuration
+        jira_session: Active JIRA client session
+        reference_pool: Dictionary containing referenced values for field substitution
+
+    Raises:
+        jira.exceptions.JIRAError: If ticket creation fails
+    """
     joft.base.update_reference_pool(action.reference_data, reference_pool)
     joft.base.apply_reference_pool_to_payload(reference_pool, action.fields)
     logging.debug(f"Creating new ticket of type: {action.fields['issuetype']['name']}")
@@ -27,14 +38,22 @@ def create_ticket(
         reference_pool[action.object_id] = new_issue
 
 
-# TODO jira_session is not needed here. Maybe remove?
 def update_ticket(
     action: joft.models.UpdateTicketAction,
     jira_session: jira.JIRA,
-    reference_pool: typing.Dict[
-        str, typing.Union[str, jira.Issue | str | typing.List[str]]
-    ],
-):
+    reference_pool: ReferencePoolType,
+) -> None:
+    """Update an existing JIRA ticket based on the action configuration.
+
+    Args:
+        action: The update ticket action configuration
+        jira_session: Active JIRA client session
+        reference_pool: Dictionary containing referenced values for field substitution
+
+    Raises:
+        Exception: If referenced ticket doesn't exist
+        jira.exceptions.JIRAError: If ticket update fails
+    """
     joft.base.update_reference_pool(action.reference_data, reference_pool)
     joft.base.apply_reference_pool_to_payload(reference_pool, action.fields)
 
@@ -46,7 +65,7 @@ def update_ticket(
             )
         )
 
-    ticket_to: jira.Issue = typing.cast(jira.Issue, reference_pool[action.reference_id])
+    ticket_to: jira.Issue = cast(jira.Issue, reference_pool[action.reference_id])
 
     logging.debug(f"Updating ticket '{ticket_to.key}'")
     logging.debug(f"Payload:\n{action.fields}")
@@ -61,10 +80,18 @@ def update_ticket(
 def link_issues(
     action: joft.models.LinkIssuesAction,
     jira_session: jira.JIRA,
-    reference_pool: typing.Dict[
-        str, typing.Union[str, jira.Issue | str | typing.List[str]]
-    ],
-):
+    reference_pool: ReferencePoolType,
+) -> None:
+    """Create a link between two JIRA issues.
+
+    Args:
+        action: The link issues action configuration
+        jira_session: Active JIRA client session
+        reference_pool: Dictionary containing referenced values for field substitution
+
+    Raises:
+        jira.exceptions.JIRAError: If link creation fails
+    """
     joft.base.update_reference_pool(action.reference_data, reference_pool)
     joft.base.apply_reference_pool_to_payload(reference_pool, action.fields)
 
@@ -83,10 +110,19 @@ def link_issues(
 def transition_issue(
     action: joft.models.TransitionAction,
     jira_session: jira.JIRA,
-    reference_pool: typing.Dict[
-        str, typing.Union[str, jira.Issue | str | typing.List[str]]
-    ],
-):
+    reference_pool: ReferencePoolType,
+) -> None:
+    """Transition a JIRA issue to a new status.
+
+    Args:
+        action: The transition action configuration
+        jira_session: Active JIRA client session
+        reference_pool: Dictionary containing referenced values for field substitution
+
+    Raises:
+        Exception: If referenced ticket doesn't exist
+        jira.exceptions.JIRAError: If transition fails
+    """
     joft.base.update_reference_pool(action.reference_data, reference_pool)
     joft.base.apply_reference_pool_to_payload(reference_pool, action.fields)
 
@@ -98,7 +134,7 @@ def transition_issue(
             )
         )
 
-    ticket_to: jira.Issue = typing.cast(jira.Issue, reference_pool[action.reference_id])
+    ticket_to: jira.Issue = cast(jira.Issue, reference_pool[action.reference_id])
 
     logging.info(f"Transitioning issue '{ticket_to.key}'...")
     logging.info(

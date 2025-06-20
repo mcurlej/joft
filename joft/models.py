@@ -1,5 +1,5 @@
 import dataclasses
-import typing
+from typing import Dict, Any, List, Optional
 
 
 @dataclasses.dataclass
@@ -12,16 +12,26 @@ class Trigger:
 @dataclasses.dataclass
 class ReferenceData:
     reference_id: str
-    fields: list[str]
+    fields: List[str]
 
 
 @dataclasses.dataclass(kw_only=True)
 class Action:
     # required fields
     type: str
-    fields: typing.Dict[str, typing.Any]
+    fields: Dict[str, Any]
 
-    def reuse_data_must_be_list(self, reuse_data):
+    def reuse_data_must_be_list(
+        self, reuse_data: Dict[str, Any] | List[Dict[str, Any]]
+    ) -> None:
+        """Validate that reuse_data is a list.
+
+        Args:
+            reuse_data: The data to validate
+
+        Raises:
+            Exception: If reuse_data is not a list
+        """
         reuse_data_type = type(reuse_data)
 
         if reuse_data_type is not list:
@@ -32,12 +42,12 @@ class Action:
 
 @dataclasses.dataclass(kw_only=True)
 class CreateTicketAction(Action):
-    reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
-    object_id: str | None = None
+    reuse_data: dataclasses.InitVar[Optional[List[Dict[str, Any]]]] = None
+    object_id: Optional[str] = None
 
-    reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
+    reference_data: List[ReferenceData] = dataclasses.field(default_factory=list)
 
-    def __post_init__(self, reuse_data):
+    def __post_init__(self, reuse_data: Optional[List[Dict[str, Any]]]) -> None:
         if reuse_data:
             self.reuse_data_must_be_list(reuse_data)
 
@@ -48,12 +58,12 @@ class CreateTicketAction(Action):
 @dataclasses.dataclass(kw_only=True)
 class UpdateTicketAction(Action):
     reference_id: str
-    object_id: str | None = None
-    reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
+    object_id: Optional[str] = None
+    reuse_data: dataclasses.InitVar[Optional[List[Dict[str, Any]]]] = None
 
-    reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
+    reference_data: List[ReferenceData] = dataclasses.field(default_factory=list)
 
-    def __post_init__(self, reuse_data):
+    def __post_init__(self, reuse_data: Optional[List[Dict[str, Any]]]) -> None:
         if reuse_data:
             self.reuse_data_must_be_list(reuse_data)
 
@@ -63,12 +73,12 @@ class UpdateTicketAction(Action):
 
 @dataclasses.dataclass(kw_only=True)
 class LinkIssuesAction(Action):
-    reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
-    object_id: str | None = None
+    reuse_data: dataclasses.InitVar[Optional[List[Dict[str, Any]]]] = None
+    object_id: Optional[str] = None
 
-    reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
+    reference_data: List[ReferenceData] = dataclasses.field(default_factory=list)
 
-    def __post_init__(self, reuse_data):
+    def __post_init__(self, reuse_data: Optional[List[Dict[str, Any]]]) -> None:
         if reuse_data:
             self.reuse_data_must_be_list(reuse_data)
 
@@ -81,12 +91,12 @@ class TransitionAction(Action):
     reference_id: str
     transition: str
     comment: str
-    object_id: str | None = None
-    reuse_data: dataclasses.InitVar[typing.List[ReferenceData] | None] = None
+    object_id: Optional[str] = None
+    reuse_data: dataclasses.InitVar[Optional[List[Dict[str, Any]]]] = None
 
-    reference_data: typing.List[ReferenceData] = dataclasses.field(default_factory=list)
+    reference_data: List[ReferenceData] = dataclasses.field(default_factory=list)
 
-    def __post_init__(self, reuse_data):
+    def __post_init__(self, reuse_data: Optional[List[Dict[str, Any]]]) -> None:
         if reuse_data:
             self.reuse_data_must_be_list(reuse_data)
 
@@ -100,19 +110,22 @@ class JiraTemplate:
     kind: str
 
     # initvars
-    actions: dataclasses.InitVar[typing.List[typing.Dict[str, typing.Any]]]
-    trigger: dataclasses.InitVar[Trigger]
+    actions: dataclasses.InitVar[List[Dict[str, Any]]]
+    trigger: dataclasses.InitVar[Dict[str, Any]]
 
-    # with default values procesed in __post_init__
-    jira_actions: list[
+    # with default values processed in __post_init__
+    jira_actions: List[
         CreateTicketAction | UpdateTicketAction | LinkIssuesAction | TransitionAction
     ] = dataclasses.field(default_factory=list)
 
-    metadata: typing.Dict[str, str] | None = None
+    metadata: Optional[Dict[str, str]] = None
+    jira_search: Optional[Trigger] = None
 
-    def __post_init__(self, actions, trigger) -> None:
+    def __post_init__(
+        self, actions: List[Dict[str, Any]], trigger: Optional[Dict[str, Any]]
+    ) -> None:
         if trigger:
-            self.jira_search: Trigger = Trigger(**trigger)
+            self.jira_search = Trigger(**trigger)
 
         # TODO: all init vars need to be checked for correct types and raise if it is not so.
         for action in actions:
