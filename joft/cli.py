@@ -1,5 +1,3 @@
-import logging
-import os
 import sys
 from typing import Dict, Any, Optional
 
@@ -8,12 +6,7 @@ import jira
 
 import joft.base
 import joft.utils
-
-
-if os.getenv("JOFT_DEBUG"):
-    logging_level = logging.DEBUG
-else:
-    logging_level = logging.WARNING
+from joft.logger import configure_logger, logger
 
 
 @click.group()
@@ -24,6 +17,8 @@ def main(ctx: click.Context, config: Optional[str] = None) -> None:
     A CLI automation tool which interacts with a Jira instance and automates tasks.
     """
     ctx.obj = joft.utils.load_toml_app_config(config_path=config)
+    if "logging" in ctx.obj:
+        configure_logger(logging_config=ctx.obj["logging"])
 
 
 # TODO: refactor th CLI interface so it makes more sense
@@ -38,8 +33,7 @@ def validate(template: str) -> int:
 @click.option("--template", help="File path to the template file.")
 @click.pass_obj
 def run(ctx: Dict[str, Dict[str, Any]], template: str) -> int:
-    logging.basicConfig(format="%(levelname)s:%(message)s", level=logging_level)
-    logging.info(
+    logger.info(
         f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:"
     )
 
@@ -47,8 +41,8 @@ def run(ctx: Dict[str, Dict[str, Any]], template: str) -> int:
         ctx["jira"]["server"]["hostname"], token_auth=ctx["jira"]["server"]["pat_token"]
     )
 
-    logging.info("Session established...")
-    logging.info(f"Executing Jira template: {template}")
+    logger.info("Session established...")
+    logger.info(f"Executing Jira template: {template}")
 
     ret_code = joft.base.execute_template(template, jira_session)
 
@@ -59,8 +53,7 @@ def run(ctx: Dict[str, Dict[str, Any]], template: str) -> int:
 @click.option("--template", help="File path to the template file.")
 @click.pass_obj
 def list_issues(ctx: Dict[str, Dict[str, Any]], template: str) -> None:
-    logging.basicConfig(format="%(levelname)s:%(message)s", level=logging_level)
-    logging.info(
+    logger.info(
         f"Establishing session with jira server: {ctx['jira']['server']['hostname']}:"
     )
 
@@ -68,7 +61,7 @@ def list_issues(ctx: Dict[str, Dict[str, Any]], template: str) -> None:
         ctx["jira"]["server"]["hostname"], token_auth=ctx["jira"]["server"]["pat_token"]
     )
 
-    logging.info("Session established...")
-    logging.info(f"Executing trigger from Jira template: {template}")
+    logger.info("Session established...")
+    logger.info(f"Executing trigger from Jira template: {template}")
 
     print(joft.base.list_issues(template, jira_session))

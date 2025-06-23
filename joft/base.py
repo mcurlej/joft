@@ -1,5 +1,4 @@
 import copy
-import logging
 from typing import Dict, Union, List, Any, cast
 
 import jira
@@ -7,6 +6,7 @@ import jira.client
 import tabulate
 
 import joft.actions
+from joft.logger import logger
 import joft.models
 import joft.utils
 
@@ -40,7 +40,7 @@ def load_and_validate_template(template_file_path: str) -> joft.models.JiraTempl
     template: Dict[str, Any] = joft.utils.load_and_parse_yaml_file(template_file_path)
     jira_template = joft.models.JiraTemplate(**template)
 
-    logging.info("Yaml file loaded...")
+    logger.info("Yaml file loaded...")
     # we validate if the user entered unique object_ids for different actions in the
     # template. Each object_id references a action or a trigger, which in turn references
     # their results (a ticket or a results of a search)
@@ -113,7 +113,7 @@ def execute_template(template_file_path: str, jira_session: jira.JIRA) -> int:
         trigger_result = search_issues(jira_template, jira_session)
 
         if not trigger_result:
-            logging.info(
+            logger.info(
                 (
                     "No tickets found according to the provided jira query "
                     f"'{jira_template.jira_search.jql}'!"
@@ -194,7 +194,7 @@ def execute_actions(
                     reference_pool,
                 )
             case _:
-                logging.warning(f"Unknown action type: {action.type}")
+                logger.warning(f"Unknown action type: {action.type}")
 
 
 def execute_actions_per_trigger_ticket(

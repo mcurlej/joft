@@ -265,7 +265,7 @@ def test_multiple_references_in_str_field() -> None:
     assert mock_reference_pool["issue.key"] in mock_fields["summary"]
 
 
-@unittest.mock.patch("logging.info")
+@unittest.mock.patch("joft.base.logger")
 @unittest.mock.patch("joft.utils.load_and_parse_yaml_file")
 @unittest.mock.patch("joft.base.execute_actions_per_trigger_ticket")
 @unittest.mock.patch("joft.base.execute_actions")
@@ -273,7 +273,7 @@ def test_execute_template_with_trigger(
     mock_execute_actions,
     mock_execute_actions_per_trigger_ticket,
     mock_load_and_parse_yaml,
-    mock_log_info,
+    mock_logger,
 ) -> None:
     """Comprehensive test that loads the whole yaml template. Checks if the functions
     returns correct CLI codes."""
@@ -302,10 +302,10 @@ def test_execute_template_with_trigger(
     mock_execute_actions_per_trigger_ticket.assert_called_once_with(
         trigger_result, jira_template, mock_jira_session
     )
-    mock_log_info.assert_called_once_with("Yaml file loaded...")
+    mock_logger.info.assert_called_once_with("Yaml file loaded...")
 
 
-@unittest.mock.patch("logging.info")
+@unittest.mock.patch("joft.base.logger")
 @unittest.mock.patch("joft.utils.load_and_parse_yaml_file")
 @unittest.mock.patch("joft.base.execute_actions_per_trigger_ticket")
 @unittest.mock.patch("joft.base.execute_actions")
@@ -313,7 +313,7 @@ def test_execute_template_exit_no_tickets(
     mock_execute_actions,
     mock_execute_actions_per_trigger_ticket,
     mock_load_and_parse_yaml,
-    mock_log_info,
+    mock_logger,
 ) -> None:
     """If there are no tickets returned from a JQL query the program should exit
     as soon as possible."""
@@ -337,9 +337,9 @@ def test_execute_template_exit_no_tickets(
 
     assert mock_execute_actions_per_trigger_ticket.call_count == 0
     assert mock_execute_actions.call_count == 0
-    assert mock_log_info.call_count == 2
-    assert mock_log_info.mock_calls[0].args[0] == "Yaml file loaded..."
-    assert jira_template.jira_search.jql in mock_log_info.mock_calls[1].args[0]
+    assert mock_logger.info.call_count == 2
+    assert mock_logger.info.mock_calls[0].args[0] == "Yaml file loaded..."
+    assert jira_template.jira_search.jql in mock_logger.info.mock_calls[1].args[0]
 
 
 @unittest.mock.patch("joft.base.validate_uniqueness_of_object_ids")

@@ -1,4 +1,4 @@
-import logging
+from joft.logger import logger
 from typing import Dict, Union, List, cast, Any
 
 import jira
@@ -27,12 +27,12 @@ def create_ticket(
     """
     joft.base.update_reference_pool(action.reference_data, reference_pool)
     joft.base.apply_reference_pool_to_payload(reference_pool, action.fields)
-    logging.debug(f"Creating new ticket of type: {action.fields['issuetype']['name']}")
-    logging.debug(f"Payload:\n{action.fields}")
+    logger.debug(f"Creating new ticket of type: {action.fields['issuetype']['name']}")
+    logger.debug(f"Payload:\n{action.fields}")
 
     new_issue: jira.Issue = jira_session.create_issue(action.fields)
 
-    logging.info(f"New Jira ticket created: {new_issue.permalink()}")
+    logger.info(f"New Jira ticket created: {new_issue.permalink()}")
 
     if action.object_id:
         reference_pool[action.object_id] = new_issue
@@ -67,11 +67,11 @@ def update_ticket(
 
     ticket_to: jira.Issue = cast(jira.Issue, reference_pool[action.reference_id])
 
-    logging.debug(f"Updating ticket '{ticket_to.key}'")
-    logging.debug(f"Payload:\n{action.fields}")
+    logger.debug(f"Updating ticket '{ticket_to.key}'")
+    logger.debug(f"Payload:\n{action.fields}")
     ticket_to.update(action.fields)
 
-    logging.info(f"Ticket '{ticket_to.key}' updated.")
+    logger.info(f"Ticket '{ticket_to.key}' updated.")
 
     if action.object_id:
         reference_pool[action.object_id] = ticket_to
@@ -95,10 +95,10 @@ def link_issues(
     joft.base.update_reference_pool(action.reference_data, reference_pool)
     joft.base.apply_reference_pool_to_payload(reference_pool, action.fields)
 
-    logging.info("Linking issues...")
-    logging.info(f"Link type: {action.fields['type']}")
-    logging.info(f"Linking From Issue: {action.fields['inward_issue']}")
-    logging.info(f"Linking To Issue: {action.fields['outward_issue']}")
+    logger.info("Linking issues...")
+    logger.info(f"Link type: {action.fields['type']}")
+    logger.info(f"Linking From Issue: {action.fields['inward_issue']}")
+    logger.info(f"Linking To Issue: {action.fields['outward_issue']}")
 
     jira_session.create_issue_link(
         action.fields["type"],
@@ -136,11 +136,11 @@ def transition_issue(
 
     ticket_to: jira.Issue = cast(jira.Issue, reference_pool[action.reference_id])
 
-    logging.info(f"Transitioning issue '{ticket_to.key}'...")
-    logging.info(
+    logger.info(f"Transitioning issue '{ticket_to.key}'...")
+    logger.info(
         f"Changing status from '{ticket_to.fields.status}' to '{action.transition}'"
     )
-    logging.info(f"With comment: \n{action.comment}")
+    logger.info(f"With comment: \n{action.comment}")
 
     jira_session.transition_issue(
         ticket_to, action.transition, action.fields, action.comment

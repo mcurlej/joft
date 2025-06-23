@@ -38,6 +38,44 @@ To run the actions from your yaml template file run:
 
 If you need more verbose output for debugging, define `JOFT_DEBUG=1` environment variable.
 
+## Configuration
+
+JOFT uses a TOML configuration file (`joft.config.toml`) to manage its settings. You can create this file by copying the provided default configuration file:
+
+```bash
+cp joft.config.toml.default joft.config.toml
+```
+
+The configuration file has the following sections:
+
+### Jira Server Settings
+
+```toml
+[jira.server]
+hostname = "<your jira server url>"  # e.g., "https://your-company.atlassian.net"
+pat_token = "<your jira pat token>"  # Your Personal Access Token
+```
+
+### Logging Configuration
+
+You can configure both console (stdout) and file logging:
+
+```toml
+[logging.stdout]
+log_level = "INFO"  # One of: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
+
+[logging.file]
+log_level = "DEBUG"  # One of: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
+log_dir = "/path/to/logs"  # Optional: Directory where log files will be stored
+```
+
+- Both stdout and file logging sections are optional
+- Log files are automatically named with timestamp (format: `joft_YYYYMMDD_HHMMSS.log`)
+- For file logging:
+  - `log_dir` is optional and defaults to the current working directory
+  - Different log levels can be set for stdout and file logging
+  - Each log entry includes timestamp, logger name, log level, and message
+
 ## Docs
 
 Documentation can be found [here](docs/introduction.md).
