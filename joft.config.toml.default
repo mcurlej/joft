@@ -1,3 +1,10 @@
 [jira.server]
 hostname = "<your jira server url>"
 pat_token = "<your jira pat token>"
+
+[logging.stdout]
+log_level = <str_log_level> # "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
+
+[logging.file]
+log_level = <str_log_level> # "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
+log_dir = "<path_to_log_dir>"
